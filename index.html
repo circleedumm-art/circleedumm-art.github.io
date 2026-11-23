@@ -95,7 +95,7 @@
   <section id="enrol" class="wrap narrow">
     <h2 data-i18n="enrol_h"></h2>
     <p class="body" data-i18n="enrol_p"></p>
-    <p class="note">Already a CLC student? <a href="student.html#classes"><b>Sign in to apply for another class</b></a>. <a href="certificate.html">Verify a certificate</a></p>
+    <p class="note">Already a CLC student? <a href="student.html#classes"><b>Sign in to apply for another class</b></a>. <form action="certificate.html" method="get" class="verify-form"><label><span>Verify a certificate by number</span><input name="code" required placeholder="CLC-2026-…"></label><button class="btn small" type="submit">Check certificate</button></form></p>
     <form id="enrolForm" class="group form" novalidate>
       <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <label><span data-i18n="f_name"></span><input name="name" required autocomplete="name"></label>
