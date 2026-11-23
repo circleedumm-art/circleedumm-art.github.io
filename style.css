@@ -296,17 +296,12 @@ h3{font-size:20px;text-align:center}
 :root[lang=my] .hero h1,:root[lang=my] #top h2{font-family:"Noto Serif Myanmar",serif;font-weight:600}
 .hero::before{background:radial-gradient(closest-side,rgba(201,150,43,.2),transparent)}
 
-/* Hero pagoda: rises in once, then glows slowly */
-.pagoda{position:absolute;right:-6px;top:24px;width:300px;height:420px;z-index:0;pointer-events:none;color:var(--gold)}
-.pagoda svg{position:absolute;inset:0;width:100%;height:100%}
-.stupa{filter:drop-shadow(0 0 18px rgba(201,150,43,.45));animation:rise 2.4s cubic-bezier(.2,.8,.2,1) both,glowPulse 7s ease-in-out 2.4s infinite alternate}
-.mandala{opacity:.28;animation:spin 140s linear infinite;transform-origin:50% 62%}
-.hti{animation:shimmer 5s ease-in-out infinite alternate}
-@keyframes rise{from{opacity:0;transform:translateY(28px)}}
-@keyframes glowPulse{to{filter:drop-shadow(0 0 30px rgba(232,199,106,.7))}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes shimmer{to{filter:brightness(1.3)}}
-@media(max-width:720px){.pagoda{width:210px;height:300px;right:-34px;top:70px;opacity:.4}}
+/* Kanote lotus scrollwork accents the hero */
+.kanote{position:absolute;right:-8px;top:22px;width:300px;height:420px;z-index:0;pointer-events:none;color:var(--gold);opacity:.82;filter:drop-shadow(0 0 14px rgba(201,150,43,.25))}
+.kanote svg{width:100%;height:100%;animation:rise 2.4s cubic-bezier(.2,.8,0,1) both}
+@media(max-width:720px){.kanote{width:210px;height:300px;right:-34px;top:70px;opacity:.4}}
+.cert #certQr{display:flex;justify-content:center;margin:12px auto}
+
 
 /* Drifting petals */
 .petals{position:absolute;inset:0;overflow:hidden;pointer-events:none}
@@ -322,3 +317,6 @@ h3{font-size:20px;text-align:center}
 
 /* Keep homework instructions and written submissions readable. */
 .hw-copy{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
+.clc-notice{position:fixed;inset:0;z-index:1000;background:rgba(15,25,40,.42);display:grid;place-items:center;padding:20px}.clc-notice-card{width:min(520px,100%);padding:26px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 20px 70px rgba(0,0,0,.25)}.clc-notice-card h2{margin-top:0}.clc-notice-card p{white-space:pre-wrap;line-height:1.6}
+.tabs.eight a{white-space:nowrap}
+@media(max-width:720px){.tabs.eight a{font-size:11px;padding:8px 0}}
