@@ -7,7 +7,7 @@
   const label=()=>{
     const my=document.documentElement.lang==="my";
     buttons.forEach(b=>{
-      b.innerHTML='<span class="sound-glyph" aria-hidden="true">'+(enabled?"♫":"♪")+'</span>';
+      b.innerHTML='<svg class="sound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="sound-waves" d="M16 9a5 5 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/><path class="sound-slash" d="m16 9 5 6m0-6-5 6"/></svg>';b.classList.toggle("is-muted",!enabled);
       b.classList.toggle("sound-on",enabled);b.setAttribute("aria-pressed",String(enabled));
       b.setAttribute("aria-label",my?(enabled?"နှိပ်သံ ဖွင့်ထားသည်":"နှိပ်သံ ပိတ်ထားသည်"):(enabled?"Click sounds on":"Click sounds off"));
       b.title=b.getAttribute("aria-label");
