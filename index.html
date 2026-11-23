@@ -41,6 +41,8 @@
     <a href="#about" data-i18n="nav_about"></a>
     <a href="#programs" data-i18n="nav_programs"></a>
     <a href="#schedule" data-i18n="nav_schedule"></a>
+    <a href="#alumni" data-i18n="nav_alumni"></a>
+    <a href="#verify" data-i18n="nav_verify"></a>
     <a href="#enrol" data-i18n="nav_enrol"></a>
   </nav>
   <div class="controls">
@@ -92,10 +94,21 @@
     <ul class="group" id="guideList"></ul>
   </section>
 
+  <section id="alumni" class="wrap">
+    <h2 data-i18n="alumni_h"></h2><p class="body" data-i18n="alumni_p"></p>
+    <a class="btn" href="student.html#classes" data-i18n="alumni_cta"></a>
+  </section>
+  <section id="verify" class="wrap narrow">
+    <h2 data-i18n="verify_h"></h2><p class="body" data-i18n="verify_p"></p>
+    <form action="certificate.html" method="get" class="group form">
+      <label><span data-i18n="verify_code"></span><input name="code" required autocomplete="off" placeholder="CLC-YYYY-…"></label>
+      <button class="btn" type="submit" data-i18n="verify_btn"></button>
+    </form>
+  </section>
+
   <section id="enrol" class="wrap narrow">
     <h2 data-i18n="enrol_h"></h2>
     <p class="body" data-i18n="enrol_p"></p>
-    <p class="note">Already a CLC student? <a href="student.html#classes"><b>Sign in to apply for another class</b></a>. <form action="certificate.html" method="get" class="verify-form"><label><span>Verify a certificate by number</span><input name="code" required placeholder="CLC-2026-…"></label><button class="btn small" type="submit">Check certificate</button></form></p>
     <form id="enrolForm" class="group form" novalidate>
       <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <label><span data-i18n="f_name"></span><input name="name" required autocomplete="name"></label>
