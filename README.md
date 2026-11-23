@@ -7,8 +7,8 @@ English and life-skills learning for youths in Myanmar. This repository contains
 ## Features
 
 - **Public site:** programs, class schedule, enrolment form (with optional scholarship essay), student reviews, how-to videos.
-- **Student portal** (`student.html`): classes, weekly timetable, attendance, grades, exams, certificates, announcements, messages to the teacher, profile.
-- **Teacher portal** (`teacher.html`): attendance, grades, exams, class materials, class time and links, announcements, messages, profile.
+- **Student portal** (`student.html`): classes, weekly timetable, homework assignments and submissions, attendance, grades, exams, certificates, announcements, messages to the teacher, profile.
+- **Teacher portal** (`teacher.html`): homework assignment and review with feedback, attendance, grades, exams, class materials, class time and links, announcements, messages, profile.
 - **Admin dashboard** (`admin.html`): enrolments, accounts, classes, announcements, site content, reviews, reports.
 - **Bilingual:** English and Burmese (EN / မြန်မာ), light and dark themes.
 - **Installable PWA:** service worker, offline page, "Add to Home Screen".
@@ -49,8 +49,8 @@ Plain HTML, CSS and JavaScript (no build step), Firebase Authentication and Clou
 | File | Purpose |
 |---|---|
 | `index.html`, `app.js` | Public website |
-| `student.html`, `student.js` | Student portal |
-| `teacher.html`, `teacher.js` | Teacher portal |
+| `student.html`, `student.js`, `student-homework.js` | Student portal |
+| `teacher.html`, `teacher.js`, `teacher-homework.js` | Teacher portal |
 | `admin.html`, `admin.js` | Admin dashboard |
 | `common.js` | Shared helpers (schedule, attendance, messages, announcements) |
 | `defaults.js` | Starter programs |
