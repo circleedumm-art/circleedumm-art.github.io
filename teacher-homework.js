@@ -43,7 +43,7 @@
           '<label><span>' + text("feedback") + '</span><textarea name="feedback" rows="3" maxlength="3000">' + esc(sub.feedback || "") + '</textarea></label>' +
           '<label><span>' + text("score") + '</span><input name="score" type="number" min="0" max="100" step="1" value="' + esc(oldScore) + '"></label>' +
           '<label><span>' + text("status") + '</span><select name="status">' +
-          '(sub.source === "in_person" ? '<option value="completed_in_person" selected>' + text("completed_in_person") + '</option>' : '') +
+          (sub.source === "in_person" ? '<option value="completed_in_person" selected>' + text("completed_in_person") + '</option>' : '') +
           '<option value="reviewed"' + (status === "reviewed" ? " selected" : "") + '>' + text("reviewed") + '</option>' +
           '<option value="needs_revision"' + (status === "needs_revision" ? " selected" : "") + '>' + text("needs_revision") + '</option></select></label></form>' +
           '<button class="btn small" type="button" data-hw-feedback="' + esc(sub.id) + '">' + text("save") + '</button></div></li>';
