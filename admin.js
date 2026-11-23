@@ -67,9 +67,13 @@ async function migrateLegacyCertificates() {
       const issuedAt = firebase.firestore.FieldValue.serverTimestamp(), b = db.batch();
       b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certRef.id });
       b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt, valid: true });
+      b.set(db.collection("certificateNumberIndex").doc(certNo), { verificationId: certRef.id });
       await b.commit();
       Object.assign(m, { certNo, certificateId: certRef.id });
     }
+  try {
+    for (const m of members.filter(x=>x.status==="completed" && x.certificateId && x.certNo)) { const ref=db.collection("certificateNumberIndex").doc(m.certNo), exists=await ref.get(); if(!exists.exists) await ref.set({verificationId:m.certificateId}); }
+  } catch (err) { console.error("Certificate lookup index migration failed", err); }
   } catch (err) { console.error("Certificate migration failed", err); }
   finally { certMigrationRunning = false; }
 }
@@ -89,18 +93,19 @@ function render() {
     empty = "No enrolments yet. New ones from the website appear here instantly.";
     html = enrols.filter(hit).map(e => {
       const st = e.status || "pending";
+      const oldStudent = users.find(u => u.role === "student" && (u.email || "").trim().toLowerCase() === (e.email || "").trim().toLowerCase());
       const btn = (act, label, cls = "ghost") => `<button class="btn small ${cls}" data-act="${act}" data-id="${e.id}">${label}</button>`;
       const chosen = mail(e.email, "Circle Learning Centre – you have been chosen",
         `Hello ${e.name},\n\nGood news! You have been chosen for ${e.course} at Circle Learning Centre. Your login details will follow shortly.\n\nCircle Learning Centre`);
       const acts = [
-        st === "pending" || st === "rejected" ? btn("approve", "Approve", "") : "",
+        st === "pending" || st === "rejected" ? (oldStudent ? btn("recognizeAlumni", "Link existing student", "") : btn("approve", "Approve", "")) : "",
         st === "approved" ? btn("create", "Create account", "") + `<a class="btn small ghost" href="${chosen}">Email</a>` : "",
         st !== "rejected" && st !== "enrolled" ? btn("reject", "Reject") : "",
         e.scholarship && e.scholarship !== "none" ? btn("essay", "Scholarship", "") : "",
         btn("delEnrol", "Delete", "danger")
       ].join("");
       return `<li class="item"><div class="grow"><b>${esc(e.name)}</b><small>${esc(e.email)} · ${esc(e.course)}</small>
-        ${e.note ? `<small>“${esc(e.note)}”</small>` : ""}${e.scholarship && e.scholarship !== "none" ? `<small>🎓 ${e.scholarship === "full" ? "100%" : "50%"} scholarship requested${e.scholarshipDecision ? " · decision: " + esc(e.scholarshipDecision) : " · not decided yet"}</small>` : ""}<small>${when(e.createdAt)}</small></div>
+        ${oldStudent ? `<small class="pill s-active">Existing student · ${esc(oldStudent.loginId || oldStudent.name)}</small>` : ""}${e.note ? `<small>“${esc(e.note)}”</small>` : ""}${e.scholarship && e.scholarship !== "none" ? `<small>🎓 ${e.scholarship === "full" ? "100%" : "50%"} scholarship requested${e.scholarshipDecision ? " · decision: " + esc(e.scholarshipDecision) : " · not decided yet"}</small>` : ""}<small>${when(e.createdAt)}</small></div>
         <span class="pill s-${esc(st)}">${esc(st)}</span><div class="acts">${acts}</div></li>`;
     }).join("");
   } else if (v === "students" || v === "teachers") {
@@ -180,6 +185,7 @@ $("#list").addEventListener("click", async e => {
   try {
     if (act === "approveApplication") { const ap=applications.find(x=>x.id===id); if(ap){const b=db.batch(); b.set(db.collection("memberships").doc(`${ap.classId}_${ap.studentId}`),{classId:ap.classId,studentId:ap.studentId,studentName:ap.studentName||users.find(x=>x.id===ap.studentId)?.name||"Student",loginId:users.find(x=>x.id===ap.studentId)?.loginId||"",status:"enrolled",paidMMK:0,createdAt:FV.serverTimestamp()});b.update(db.collection("classApplications").doc(id),{status:"approved",reviewedAt:FV.serverTimestamp()});await b.commit();}}
     if (act === "rejectApplication") await db.collection("classApplications").doc(id).update({status:"rejected",reviewedAt:FV.serverTimestamp()});
+    if (act === "recognizeAlumni" && en) { const alumni = users.find(u => u.role === "student" && (u.email || "").trim().toLowerCase() === (en.email || "").trim().toLowerCase()); if (alumni) await db.collection("enrolments").doc(id).update({ status:"enrolled", matchedStudentId:alumni.id, matchedAt:firebase.firestore.FieldValue.serverTimestamp() }); }
     if (act === "approve") { await db.collection("enrolments").doc(id).update({ status: "approved" }); openCreate({ role: "student", name: en.name, email: en.email, enrolId: id }); }
     if (act === "create") openCreate({ role: "student", name: en.name, email: en.email, enrolId: id });
     if (act === "reject") await db.collection("enrolments").doc(id).update({ status: "rejected" });
@@ -435,13 +441,14 @@ async function openRecords(c) {
       if (a === "complete") {
         const certRef = db.collection("certificateVerifications").doc(), certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`, now = FV.serverTimestamp(), b = db.batch();
         b.update(db.collection("memberships").doc(id), { status: "completed", completedAt: now, certNo, certificateId: certRef.id });
-        b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt: now, valid: true }); await b.commit();
+        b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt: now, valid: true });
+        b.set(db.collection("certificateNumberIndex").doc(certNo), { verificationId: certRef.id }); await b.commit();
         Object.assign(members.find(m => m.id === id), { status: "completed", certNo, certificateId: certRef.id });
       }
       if (a === "reopen") {
         const row = members.find(m => m.id === id), b = db.batch();
         b.update(db.collection("memberships").doc(id), { status: "enrolled", completedAt: FV.delete(), certNo: FV.delete(), certificateId: FV.delete() });
-        if (row?.certificateId) b.delete(db.collection("certificateVerifications").doc(row.certificateId));
+        if (row?.certificateId) { b.delete(db.collection("certificateVerifications").doc(row.certificateId)); if(row.certNo) b.delete(db.collection("certificateNumberIndex").doc(row.certNo)); }
         await b.commit(); Object.assign(row || {}, { status: "enrolled", certNo: "", certificateId: "" });
       }
       openRecords(c);
