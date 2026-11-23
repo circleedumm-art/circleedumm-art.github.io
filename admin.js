@@ -314,7 +314,8 @@ function openClass(c = {}) {
       ${sessionFields(sessionsOf(c), DAYS, SESS_L)}
       <label><span>Time zone</span><select name="tz">${tzOptions(c.tz)}</select></label>
       <label><span>Start date</span><input type="date" name="startDate" value="${esc(c.startDate)}"></label>
-      <label><span>Class price (MMK)</span><input name="priceMMK" type="number" min="0" step="1" value="${esc(c.priceMMK ?? 0)}"></label>\n      <label><span>Duration</span><select name="durationMonths">${opts([["", "— not set —"], ...Array.from({ length: 12 }, (_, i) => [i + 1, `${i + 1} month${i ? "s" : ""}`])], c.durationMonths || "")}</select></label>
+      <label><span>Class price (MMK)</span><input name="priceMMK" type="number" min="0" step="1" value="${esc(c.priceMMK ?? 0)}"></label>
+      <label><span>Duration</span><select name="durationMonths">${opts([["", "— not set —"], ...Array.from({ length: 12 }, (_, i) => [i + 1, `${i + 1} month${i ? "s" : ""}`])], c.durationMonths || "")}</select></label>
       <label><span>Place (English)</span><input name="venue_en" placeholder="Online via Zoom" value="${esc(c.venue_en)}"></label>
       <label><span>Place (မြန်မာ)</span><input name="venue_my" value="${esc(c.venue_my)}"></label>
       <label><span>Level</span><select name="level">${opts([["", "— not set —"], ...LEVELS.map(l => [l, levelText(l, "en") + " · " + LEVEL_NAME.my[l]])], c.level || "")}</select></label>
@@ -331,7 +332,8 @@ function openClass(c = {}) {
   $("#mForm").addEventListener("input", updDur); $("#mForm").addEventListener("change", updDur); updDur();
   $("#mSave").onclick = async () => {
     const f = $("#mForm").elements, t = users.find(u => u.id === f.teacherId.value);
-    if (!Number.isInteger(Number(f.priceMMK.value)) || Number(f.priceMMK.value) < 0) return mErr("Enter a whole-number MMK class price.");\n    if (!!f.startDate.value !== !!f.durationMonths.value) return mErr("Set both the start date and the duration, or leave both empty.");
+    if (!Number.isInteger(Number(f.priceMMK.value)) || Number(f.priceMMK.value) < 0) return mErr("Enter a whole-number MMK class price.");
+    if (!!f.startDate.value !== !!f.durationMonths.value) return mErr("Set both the start date and the duration, or leave both empty.");
     const sr = readSessions(f, SESS_L); if (sr.error) return mErr(sr.error);
     const d = { programId: f.programId.value, label: f.label.value.trim(), teacherId: f.teacherId.value, teacherName: t ? t.name : "",
       ...scheduleFields(sr.list, f.tz.value), venue_en: f.venue_en.value.trim(), venue_my: f.venue_my.value.trim() || f.venue_en.value.trim(),
