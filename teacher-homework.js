@@ -8,7 +8,7 @@
       loading: "Loading submissions…", students: "Student submissions", notSubmitted: "Not submitted",
       submitted: "Submitted", reviewed: "Reviewed", needs_revision: "Revision requested",
       response: "Student work", feedback: "Feedback", score: "Score out of 100 (optional)",
-      save: "Save feedback", need: "Add a title, instructions, and due date.",
+      save: "Save feedback", status: "Status", need: "Add a title, instructions, and due date.",
       badUrl: "Use a link beginning with https://", saved: "Homework assigned.",
       feedbackSaved: "Feedback saved.", fail: "Could not save homework. Please try again."
     },
@@ -18,7 +18,7 @@
       loading: "ကျောင်းသားများ၏ ပေးပို့မှု ဖွင့်နေသည်…", students: "ကျောင်းသား၏ အိမ်စာများ", notSubmitted: "မပို့ရသေး",
       submitted: "ပို့ပြီး", reviewed: "စစ်ဆေးပြီး", needs_revision: "ပြင်ဆင်ရန် လိုအပ်",
       response: "ကျောင်းသား၏ အလုပ်", feedback: "အကြံပြုချက်", score: "ရမှတ် / ၁၀၀ (ရွေးချယ်စရာ)",
-      save: "အကြံပြုချက် သိမ်းမည်", need: "ခေါင်းစဉ်၊ ညွှန်ကြားချက်နှင့် နောက်ဆုံးရက် ထည့်ပါ။",
+      save: "အကြံပြုချက် သိမ်းမည်", status: "အခြေအနေ", need: "ခေါင်းစဉ်၊ ညွှန်ကြားချက်နှင့် နောက်ဆုံးရက် ထည့်ပါ။",
       badUrl: "https:// ဖြင့် စသော လင့်ခ်ကို အသုံးပြုပါ။", saved: "အိမ်စာ ပေးပြီးပါပြီ။",
       feedbackSaved: "အကြံပြုချက် သိမ်းပြီးပါပြီ။", fail: "သိမ်းမရပါ။ ပြန်ကြိုးစားပါ။"
     }
