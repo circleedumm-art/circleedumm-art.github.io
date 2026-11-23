@@ -337,3 +337,19 @@ h3{font-size:20px;text-align:center}
 .install-bar[hidden]{display:none}
 .install-copy{flex:1;min-width:0}.install-copy b,.install-copy small{display:block}.install-copy small{color:var(--sub);line-height:1.35}
 @media(max-width:720px){.install-bar{bottom:calc(92px + env(safe-area-inset-bottom));flex-wrap:wrap}}
+
+/* Stable homepage section alignment and language-independent testimonial card sizing. */
+#verify,#enrol{width:min(100%,760px);margin-inline:auto}
+#verify>.body,#enrol>.body{max-width:620px}
+#verify>.form,#enrol>#enrolForm{width:100%;max-width:620px}
+#enrol>.group{width:100%;max-width:620px}
+.quotes{align-items:stretch}
+.quote{flex:0 0 min(320px,82vw);height:272px;min-height:272px;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto}
+.quote blockquote{-webkit-line-clamp:4;line-clamp:4;line-height:1.55}
+.sound-toggle-head{display:grid;place-items:center;font-size:19px}
+.sound-glyph{display:inline-block}
+.sound-change .sound-glyph{animation:soundPulse .38s ease-out}
+@keyframes soundPulse{0%{transform:scale(.72) rotate(-12deg);opacity:.55}55%{transform:scale(1.25) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.install-bar{padding:16px 18px}
+.install-bar .install-copy small{max-width:52ch}
+@media(max-width:720px){.quote{flex-basis:min(320px,82vw);height:272px}.install-bar{bottom:calc(92px + env(safe-area-inset-bottom))}}
