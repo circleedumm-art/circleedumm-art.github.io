@@ -321,51 +321,157 @@ h3{font-size:20px;text-align:center}
 .tabs.eight a{white-space:nowrap}
 @media(max-width:720px){.tabs.eight a{font-size:11px;padding:8px 0}}
 
-/* Public verification form follows the same section width and card rhythm as the main page. */
-#verify .group{max-width:620px}
-#verify .group .btn{justify-self:start}
-@media(min-width:900px){#verify{scroll-margin-top:100px}}
+/* ---------- Unified section & card alignment ---------- */
+.wrap,
+#verify,
+#enrol {
+  width: min(100%, 760px);
+  margin-inline: auto;
+  padding-inline: 20px;
+  text-align: left;
+}
 
-/* Keep the verification and enrolment forms aligned within matching section columns. */
-#verify,#enrol{max-width:760px}
-#verify>.form,#enrol>#enrolForm{max-width:560px}
-#verify .group{max-width:560px}
-#verify .group .btn{justify-self:start}
-.quotes{align-items:stretch}
-.quote{flex-basis:min(320px,82%);height:260px;min-height:260px;flex-shrink:0}
-.install-bar{position:fixed;z-index:100;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(680px,calc(100% - 28px));display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--glass);backdrop-filter:blur(18px);box-shadow:var(--shadow)}
-.install-bar[hidden]{display:none}
-.install-copy{flex:1;min-width:0}.install-copy b,.install-copy small{display:block}.install-copy small{color:var(--sub);line-height:1.35}
-@media(max-width:720px){.install-bar{bottom:calc(92px + env(safe-area-inset-bottom));flex-wrap:wrap}}
+/* Keep all section copy, forms, cards, and notes locked to the exact same left edge and width */
+.wrap > .body,
+.wrap > .group,
+.wrap > .form,
+.wrap > .note,
+#verify > .body,
+#verify > .form,
+#verify .group,
+#enrol > .body,
+#enrol > #enrolForm,
+#enrol > .group,
+#enrol > .note {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  text-align: left;
+}
 
-/* Stable homepage section alignment and language-independent testimonial card sizing. */
-#verify,#enrol{width:min(100%,760px);margin-inline:auto}
-#verify>.body,#enrol>.body{max-width:620px}
-#verify>.form,#enrol>#enrolForm{width:100%;max-width:620px}
-#enrol>.group{width:100%;max-width:620px}
-.quotes{align-items:stretch}
-.quote{flex:0 0 min(320px,82vw);height:272px;min-height:272px;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto}
-.quote blockquote{-webkit-line-clamp:4;line-clamp:4;line-height:1.55}
-.sound-toggle-head{display:grid;place-items:center;font-size:19px}
-.sound-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.sound-icon path:first-child{fill:currentColor;stroke:none}
-.sound-waves{opacity:1;transform-origin:15px 12px}
-.sound-slash{opacity:0}
-.is-muted .sound-waves{opacity:0}
-.is-muted .sound-slash{opacity:1}
-.sound-change:not(.is-muted) .sound-waves{animation:soundPulse .38s ease-out}
-@keyframes soundPulse{0%{transform:scale(.72) rotate(-12deg);opacity:.55}55%{transform:scale(1.25) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
-.install-bar{padding:16px 18px}
-.install-bar .install-copy small{max-width:52ch}
-@media(max-width:720px){.quote{flex-basis:min(320px,82vw);height:272px}.install-bar{bottom:calc(92px + env(safe-area-inset-bottom))}}
+.wrap > .note.center {
+  text-align: center;
+}
 
-/* Center the two public action sections and keep their card columns identical. */
-#verify,#enrol{text-align:center}
-#verify>.body,#enrol>.body{max-width:620px;margin-inline:auto;text-align:center}
-#verify>.form,#enrol>#enrolForm,#enrol>.group,#enrol>.note{width:100%;max-width:620px;margin-inline:auto;text-align:left}
-#verify>.form .btn{justify-self:start}
-#enrol>.group .item{text-align:left}
-@media(max-width:720px){
-  #verify,#enrol{padding-inline:20px}
-  #verify>.form,#enrol>#enrolForm,#enrol>.group{width:100%;max-width:620px}
+#verify .group .btn,
+#verify > .form .btn {
+  justify-self: start;
+}
+
+/* Keep section heading underlines aligned to the left edge of the boxes */
+#top .wrap > h2 {
+  text-align: left;
+}
+#top .wrap > h2::after {
+  left: 0;
+  transform: rotate(45deg);
+}
+#top .wrap > h2::before {
+  left: 18px;
+  transform-origin: left;
+}
+
+@media (min-width: 900px) {
+  #verify,
+  #enrol {
+    scroll-margin-top: 100px;
+  }
+}
+
+/* Testimonial cards: stable height across languages */
+.quotes {
+  align-items: stretch;
+}
+.quote {
+  flex: 0 0 min(320px, 82vw);
+  height: 272px;
+  min-height: 272px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+}
+.quote blockquote {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  line-height: 1.55;
+}
+
+/* Sound toggle & install bar */
+.sound-toggle-head {
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+}
+.sound-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sound-icon path:first-child {
+  fill: currentColor;
+  stroke: none;
+}
+.sound-waves {
+  opacity: 1;
+  transform-origin: 15px 12px;
+}
+.sound-slash {
+  opacity: 0;
+}
+.is-muted .sound-waves {
+  opacity: 0;
+}
+.is-muted .sound-slash {
+  opacity: 1;
+}
+.sound-change:not(.is-muted) .sound-waves {
+  animation: soundPulse 0.38s ease-out;
+}
+@keyframes soundPulse {
+  0% { transform: scale(0.72) rotate(-12deg); opacity: 0.55; }
+  55% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.install-bar {
+  position: fixed;
+  z-index: 100;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(680px, calc(100% - 28px));
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+.install-bar[hidden] {
+  display: none;
+}
+.install-copy {
+  flex: 1;
+  min-width: 0;
+}
+.install-copy b,
+.install-copy small {
+  display: block;
+}
+.install-copy small {
+  color: var(--sub);
+  line-height: 1.35;
+  max-width: 52ch;
+}
+@media (max-width: 720px) {
+  .install-bar {
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+  }
 }
