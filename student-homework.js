@@ -6,7 +6,7 @@
       homework: "Homework", open: "Open", loading: "Loading homework…", due: "Due", noHomework: "No homework has been assigned yet.",
       instructions: "Instructions", response: "Your answer or notes", workLink: "Link to your work (optional)",
       submit: "Submit homework", resubmit: "Resubmit work", submitted: "Submitted", reviewed: "Reviewed",
-      needs_revision: "Revision requested", notSubmitted: "Not submitted", feedback: "Teacher feedback",
+      needs_revision: "Revision requested", completed_in_person: "Completed in person", notSubmitted: "Not submitted", feedback: "Teacher feedback",
       score: "Score", required: "Write a response or add a link before submitting.",
       badUrl: "Use a link beginning with https://", saved: "Homework submitted.", failed: "Could not submit homework. Please try again."
     },
@@ -14,7 +14,7 @@
       homework: "အိမ်စာ", open: "ဖွင့်မည်", loading: "အိမ်စာများ ဖွင့်နေသည်…", due: "နောက်ဆုံးရက်", noHomework: "အိမ်စာ မပေးရသေးပါ။",
       instructions: "ညွှန်ကြားချက်များ", response: "သင့်အဖြေ သို့မဟုတ် မှတ်ချက်", workLink: "သင့်အလုပ် လင့်ခ် (ရွေးချယ်စရာ)",
       submit: "အိမ်စာ ပို့မည်", resubmit: "ပြန်ပို့မည်", submitted: "ပို့ပြီး", reviewed: "စစ်ဆေးပြီး",
-      needs_revision: "ပြင်ဆင်ရန် လိုအပ်", notSubmitted: "မပို့ရသေး", feedback: "ဆရာ၏ အကြံပြုချက်",
+      needs_revision: "ပြင်ဆင်ရန် လိုအပ်", completed_in_person: "လူကိုယ်တိုင် ပြီးစီး", notSubmitted: "မပို့ရသေး", feedback: "ဆရာ၏ အကြံပြုချက်",
       score: "ရမှတ်", required: "မပို့မီ အဖြေရေးပါ သို့မဟုတ် လင့်ခ်ထည့်ပါ။",
       badUrl: "https:// ဖြင့် စသော လင့်ခ်ကို အသုံးပြုပါ။", saved: "အိမ်စာ ပို့ပြီးပါပြီ။", failed: "အိမ်စာ ပို့မရပါ။ ပြန်ကြိုးစားပါ။"
     }
