@@ -117,6 +117,57 @@ service cloud.firestore {
         && id == request.resource.data.classId + '_' + request.resource.data.date + '_' + request.resource.data.studentId;
     }
 
+
+    // Homework assignments belong to a class. Students in that class and its teacher can read them.
+    match /homework/{id} {
+      allow read: if inClass(resource.data.classId) || teaches(resource.data.classId);
+      allow create: if signedIn() && active() && teaches(request.resource.data.classId)
+        && request.resource.data.keys().hasOnly(['classId','teacherId','title','instructions','dueDate','link','createdAt'])
+        && request.resource.data.teacherId == request.auth.uid
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 150
+        && request.resource.data.instructions is string && request.resource.data.instructions.size() > 0 && request.resource.data.instructions.size() <= 3000
+        && request.resource.data.dueDate is string && request.resource.data.dueDate.size() == 10
+        && httpsOrEmpty(request.resource.data.get('link', ''))
+        && request.resource.data.createdAt == request.time;
+      allow delete: if teaches(resource.data.classId);
+    }
+
+    // A student can submit their own work. Only that student and the class teacher can read it.
+    // Students may revise their response without changing teacher feedback; teachers can only review it.
+    match /homeworkSubmissions/{id} {
+      allow read: if signedIn() && active()
+        && ((resource.data.studentId == request.auth.uid && inClass(resource.data.classId))
+          || teaches(resource.data.classId));
+      allow create: if signedIn() && active()
+        && request.resource.data.keys().hasOnly(['homeworkId','classId','studentId','studentName','response','url','status','submittedAt'])
+        && request.resource.data.studentId == request.auth.uid
+        && id == request.resource.data.homeworkId + '_' + request.auth.uid
+        && inClass(request.resource.data.classId)
+        && exists(/databases/$(database)/documents/homework/$(request.resource.data.homeworkId))
+        && get(/databases/$(database)/documents/homework/$(request.resource.data.homeworkId)).data.classId == request.resource.data.classId
+        && request.resource.data.response is string && request.resource.data.response.size() <= 3000
+        && httpsOrEmpty(request.resource.data.get('url', ''))
+        && request.resource.data.status == 'submitted'
+        && request.resource.data.submittedAt == request.time;
+      allow update: if signedIn() && active() && (
+        (resource.data.studentId == request.auth.uid && inClass(resource.data.classId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['response','url','status','submittedAt'])
+          && request.resource.data.response is string && request.resource.data.response.size() <= 3000
+          && httpsOrEmpty(request.resource.data.get('url', ''))
+          && request.resource.data.status == 'submitted'
+          && request.resource.data.submittedAt == request.time)
+        ||
+        (teaches(resource.data.classId)
+          && get(/databases/$(database)/documents/homework/$(resource.data.homeworkId)).data.teacherId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['feedback','score','status','reviewedAt'])
+          && request.resource.data.feedback is string && request.resource.data.feedback.size() <= 3000
+          && request.resource.data.status in ['reviewed', 'needs_revision']
+          && request.resource.data.reviewedAt == request.time
+          && (!request.resource.data.keys().hasAny(['score'])
+            || (request.resource.data.score is number && request.resource.data.score >= 0 && request.resource.data.score <= 100)))
+      );
+    }
+
     // Class materials are links added by the teacher; only class members and the teacher can read them.
     match /materials/{id} {
       allow read: if inClass(resource.data.classId) || teaches(resource.data.classId);
