@@ -2,7 +2,7 @@
   "name": "Circle Learning Centre",
   "short_name": "CLC",
   "description": "Classes, schedule, grades and messages for Circle Learning Centre students and teachers.",
-  "start_url": "student.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
