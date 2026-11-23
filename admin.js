@@ -32,12 +32,12 @@ function start() {
   db.collection("enrolments").orderBy("createdAt", "desc").onSnapshot(s => { enrols = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("users").onSnapshot(s => { users = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("programs").orderBy("order").onSnapshot(s => { programs = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
-  db.collection("classes").onSnapshot(s => { classes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
+  db.collection("classes").onSnapshot(s => { classes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); migrateLegacyCertificates(); }, fail);
   db.collection("reviews").onSnapshot(s => { reviews = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("siteContent").doc("guides").onSnapshot(d => { guides = d.exists ? d.data() : {}; render(); }, fail);
   db.collection("announcements").onSnapshot(s => { anns = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("reports").onSnapshot(s => { reports = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
-  db.collection("memberships").onSnapshot(s => { members = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
+  db.collection("memberships").onSnapshot(s => { members = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); migrateLegacyCertificates(); }, fail);
   db.collection("classApplications").onSnapshot(s => { applications = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
 }
 
@@ -52,6 +52,27 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 let siteTab = "programs", guides = {}, reviews = [];
 const view = () => { let v = (location.hash || "#enrolments").slice(1); if (v === "programs") v = "site"; return VIEWS[v] ? v : "enrolments"; };
 const progName = id => (programs.find(p => p.id === id) || {}).en || "Program";
+let certMigrationRunning = false;
+async function migrateLegacyCertificates() {
+  if (certMigrationRunning || !classes.length) return;
+  const pending = members.filter(m => m.status === "completed" && !m.certificateId);
+  if (!pending.length) return;
+  certMigrationRunning = true;
+  try {
+    for (const m of pending) {
+      const c = classes.find(x => x.id === m.classId);
+      if (!c) continue;
+      const certRef = db.collection("certificateVerifications").doc();
+      const certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`;
+      const issuedAt = firebase.firestore.FieldValue.serverTimestamp(), b = db.batch();
+      b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certRef.id });
+      b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt, valid: true });
+      await b.commit();
+      Object.assign(m, { certNo, certificateId: certRef.id });
+    }
+  } catch (err) { console.error("Certificate migration failed", err); }
+  finally { certMigrationRunning = false; }
+}
 
 function render() {
   const v = view();
