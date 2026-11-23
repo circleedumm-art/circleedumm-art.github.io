@@ -8,7 +8,7 @@ English and life-skills learning for youths in Myanmar. This repository contains
 
 - **Public site:** programs, class schedule, enrolment form (with optional scholarship essay), student reviews, how-to videos.
 - **Student portal** (`student.html`): classes, weekly timetable, homework assignments and submissions, attendance, grades, exams, certificates, announcements, messages to the teacher, profile.
-- **Teacher portal** (`teacher.html`): homework assignment and review with feedback, attendance, grades, exams, class materials, class time and links, announcements, messages, profile.
+- **Teacher portal** (`teacher.html`): homework assignment, editing, progress tracking, in-person completion records and feedback, attendance, grades, exams, class materials, class time and links, announcements, messages, profile.
 - **Admin dashboard** (`admin.html`): enrolments, accounts, classes, announcements, site content, reviews, reports.
 - **Bilingual:** English and Burmese (EN / မြန်မာ), light and dark themes.
 - **Installable PWA:** service worker, offline page, "Add to Home Screen".
