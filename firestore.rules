@@ -117,7 +117,6 @@ service cloud.firestore {
         && id == request.resource.data.classId + '_' + request.resource.data.date + '_' + request.resource.data.studentId;
     }
 
-
     // Homework assignments belong to a class. Students in that class and its teacher can read them.
     match /homework/{id} {
       allow read: if inClass(resource.data.classId) || teaches(resource.data.classId);
