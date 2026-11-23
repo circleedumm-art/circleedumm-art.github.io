@@ -325,3 +325,15 @@ h3{font-size:20px;text-align:center}
 #verify .group{max-width:620px}
 #verify .group .btn{justify-self:start}
 @media(min-width:900px){#verify{scroll-margin-top:100px}}
+
+/* Keep the verification and enrolment forms aligned within matching section columns. */
+#verify,#enrol{max-width:760px}
+#verify>.form,#enrol>#enrolForm{max-width:560px}
+#verify .group{max-width:560px}
+#verify .group .btn{justify-self:start}
+.quotes{align-items:stretch}
+.quote{flex-basis:min(320px,82%);height:260px;min-height:260px;flex-shrink:0}
+.install-bar{position:fixed;z-index:100;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(680px,calc(100% - 28px));display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--glass);backdrop-filter:blur(18px);box-shadow:var(--shadow)}
+.install-bar[hidden]{display:none}
+.install-copy{flex:1;min-width:0}.install-copy b,.install-copy small{display:block}.install-copy small{color:var(--sub);line-height:1.35}
+@media(max-width:720px){.install-bar{bottom:calc(92px + env(safe-area-inset-bottom));flex-wrap:wrap}}
