@@ -289,6 +289,26 @@ service cloud.firestore {
       allow update: if teaches(id) && publicFieldsOnly();   // keeps the public timetable in step with a teacher's change
     }
 
+    match /certificateVerifications/{id} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /classApplications/{id} {
+      allow get, list: if isAdmin() || (signedIn() && active() && resource.data.studentId == request.auth.uid);
+      allow create: if signedIn() && active()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && exists(/databases/$(database)/documents/publicSchedule/$(request.resource.data.classId))
+        && get(/databases/$(database)/documents/publicSchedule/$(request.resource.data.classId)).data.programId == request.resource.data.programId
+        && !exists(/databases/$(database)/documents/memberships/$(request.resource.data.classId + '_' + request.auth.uid));
+      allow update: if signedIn() && active() && resource.data.studentId == request.auth.uid
+        && resource.data.status == 'rejected' && request.resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']);
+      allow update, delete: if isAdmin();
+    }
+
     // ---- Everything else: admin only -------------------------------------
     match /{document=**} {
       allow read, write: if isAdmin();
