@@ -8,7 +8,7 @@
       loading: "Loading submissions…", students: "Student submissions", notSubmitted: "Not submitted",
       submitted: "Submitted", reviewed: "Reviewed", needs_revision: "Revision requested", completed_in_person: "Completed in person",
       response: "Student work", feedback: "Feedback", score: "Score out of 100 (optional)",
-      save: "Save feedback", status: "Status", edit: "Edit assignment", editSave: "Save changes", cancel: "Cancel edit", inPerson: "Record completed in person", need: "Add a title, instructions, and due date.",
+      save: "Save feedback", status: "Status", edit: "Edit assignment", editSave: "Save changes", editSaved: "Homework updated.", cancel: "Cancel edit", inPerson: "Record completed in person", completionSaved: "Completion recorded.", need: "Add a title, instructions, and due date.",
       badUrl: "Use a link beginning with https://", saved: "Homework assigned.",
       feedbackSaved: "Feedback saved.", fail: "Could not save homework. Please try again."
     },
@@ -18,7 +18,7 @@
       loading: "ကျောင်းသားများ၏ ပေးပို့မှု ဖွင့်နေသည်…", students: "ကျောင်းသား၏ အိမ်စာများ", notSubmitted: "မပို့ရသေး",
       submitted: "ပို့ပြီး", reviewed: "စစ်ဆေးပြီး", needs_revision: "ပြင်ဆင်ရန် လိုအပ်", completed_in_person: "လူကိုယ်တိုင် ပြီးစီး",
       response: "ကျောင်းသား၏ အလုပ်", feedback: "အကြံပြုချက်", score: "ရမှတ် / ၁၀၀ (ရွေးချယ်စရာ)",
-      save: "အကြံပြုချက် သိမ်းမည်", status: "အခြေအနေ", edit: "အိမ်စာ ပြင်မည်", editSave: "ပြင်ဆင်မှု သိမ်းမည်", cancel: "မလုပ်တော့ပါ", inPerson: "လူကိုယ်တိုင် ပြီးစီးကြောင်း မှတ်မည်", need: "ခေါင်းစဉ်၊ ညွှန်ကြားချက်နှင့် နောက်ဆုံးရက် ထည့်ပါ။",
+      save: "အကြံပြုချက် သိမ်းမည်", status: "အခြေအနေ", edit: "အိမ်စာ ပြင်မည်", editSave: "ပြင်ဆင်မှု သိမ်းမည်", editSaved: "အိမ်စာ ပြင်ဆင်ပြီးပါပြီ။", cancel: "မလုပ်တော့ပါ", inPerson: "လူကိုယ်တိုင် ပြီးစီးကြောင်း မှတ်မည်", completionSaved: "ပြီးစီးမှု မှတ်တမ်းတင်ပြီးပါပြီ။", need: "ခေါင်းစဉ်၊ ညွှန်ကြားချက်နှင့် နောက်ဆုံးရက် ထည့်ပါ။",
       badUrl: "https:// ဖြင့် စသော လင့်ခ်ကို အသုံးပြုပါ။", saved: "အိမ်စာ ပေးပြီးပါပြီ။",
       feedbackSaved: "အကြံပြုချက် သိမ်းပြီးပါပြီ။", fail: "သိမ်းမရပါ။ ပြန်ကြိုးစားပါ။"
     }
@@ -105,7 +105,7 @@
         const patch = { title: title, instructions: instructions, dueDate: dueDate, link: link, updatedAt: FV.serverTimestamp() };
         await db.collection("homework").doc(existingId).update(patch);
         Object.assign(d.homework.find(x => x.id === existingId), patch);
-        toast(text("editSave"));
+        toast(text("editSaved"));
       } else {
         const data = { classId: c.id, teacherId: me.id, title: title, instructions: instructions, dueDate: dueDate, link: link, createdAt: FV.serverTimestamp() };
         const ref = await db.collection("homework").add(data);
@@ -123,6 +123,7 @@
         response: "", url: "", status: "completed_in_person", source: "in_person", teacherId: me.id, completedAt: FV.serverTimestamp() };
       await db.collection("homeworkSubmissions").doc(id).set(data);
       d.homeworkSubmissions.push(Object.assign({ id: id }, data, { completedAt: { ms: Date.now() } }));
+      toast(text("completionSaved"));
       render();
     }));
     $$("[data-hw-feedback]").forEach(button => button.onclick = guard(async () => {
