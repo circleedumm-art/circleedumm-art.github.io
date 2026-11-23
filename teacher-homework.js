@@ -82,7 +82,7 @@
     const form = $("#hw-assignment-form"), addButton = $("#hw-add"), cancelButton = $("#hw-cancel-edit");
     const resetEdit = () => { form.reset(); form.elements.homeworkId.value = ""; addButton.textContent = text("assign"); cancelButton.hidden = true; };
     cancelButton.onclick = resetEdit;
-    $("[data-hw-edit]").forEach(button => button.onclick = () => {
+    $$("[data-hw-edit]").forEach(button => button.onclick = () => {
       const hw = d.homework.find(x => x.id === button.dataset.hwEdit);
       if (!hw) return;
       form.elements.homeworkId.value = hw.id;
@@ -114,7 +114,7 @@
       }
       render();
     });
-    $("[data-hw-complete]").forEach(button => button.onclick = guard(async () => {
+    $$("[data-hw-complete]").forEach(button => button.onclick = guard(async () => {
       const student = mem(c).find(x => x.studentId === button.dataset.student);
       const hw = d.homework.find(x => x.id === button.dataset.hwComplete);
       if (!student || !hw) return;
