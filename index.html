@@ -50,6 +50,7 @@
       <button data-lang="my" aria-pressed="false">မြန်မာ</button>
     </div>
     <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"></button>
+    <button class="icon-btn sound-toggle-head" id="soundToggleHead" type="button" aria-pressed="false" aria-label="Sound effects off">♪</button>
     <button class="btn small" id="loginBtn" data-i18n="login"></button>
   </div>
 </header>
@@ -101,7 +102,7 @@
     </form>
   </section>
 
-  <section id="enrol" class="wrap narrow">
+  <section id="enrol" class="wrap">
     <h2 data-i18n="enrol_h"></h2>
     <p class="body" data-i18n="enrol_p"></p>
     <ul class="group" style="margin:16px 0"><li class="item"><div class="grow"><b data-i18n="alumni_h"></b><small data-i18n="alumni_p"></small></div><a class="btn small" href="student.html#classes" data-i18n="alumni_cta"></a></li></ul>
@@ -166,6 +167,7 @@
   </div>
 </div>
 
+<aside class="install-bar" id="installBar" role="region" aria-label="Install app" hidden><div class="install-copy"><b id="installTitle"></b><small id="installHelp"></small></div><button class="btn small" id="installAction" type="button"></button><button class="icon-btn" id="installDismiss" type="button" aria-label="Dismiss">×</button></aside>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -178,5 +180,6 @@
 <script src="festive.js" defer></script>
 <script src="pwa.js" defer></script>
 <script src="ripple.js" defer></script>
+<script src="sound.js" defer></script>
 </body>
 </html>
