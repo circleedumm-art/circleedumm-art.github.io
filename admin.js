@@ -62,14 +62,14 @@ async function migrateLegacyCertificates() {
     for (const m of pending) {
       const c = classes.find(x => x.id === m.classId);
       if (!c) continue;
-      const certRef = db.collection("certificateVerifications").doc();
-      const certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`;
+      const serial = db.collection("certificateVerifications").doc().id.toUpperCase();
+      const certNo = `CLC-${new Date().getFullYear()}-${serial}`, certRef = db.collection("certificateVerifications").doc(certNo);
       const issuedAt = firebase.firestore.FieldValue.serverTimestamp(), b = db.batch();
-      b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certRef.id });
+      b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certNo });
       b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), studentInitials: initialsOf(m.studentName), issuedAt, valid: true });
-      b.set(db.collection("certificateNumberIndex").doc(certNo), { verificationId: certRef.id });
+      
       await b.commit();
-      Object.assign(m, { certNo, certificateId: certRef.id });
+      Object.assign(m, { certNo, certificateId: certNo });
     }
   try {
     for (const m of members.filter(x=>x.status==="completed" && x.certificateId && x.certNo)) { const ref=db.collection("certificateNumberIndex").doc(String(m.certNo).trim().toUpperCase()), exists=await ref.get(); if(!exists.exists) await ref.set({verificationId:m.certificateId}); const verify=db.collection("certificateVerifications").doc(m.certificateId), record=await verify.get(); if(record.exists && !record.data().studentInitials) await verify.update({studentInitials:initialsOf(m.studentName)}); }
@@ -439,12 +439,12 @@ async function openRecords(c) {
       }
       if (a === "delGrade") await db.collection("grades").doc(id).delete();
       if (a === "complete") {
-        const certRef = db.collection("certificateVerifications").doc(), certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`, now = FV.serverTimestamp(), b = db.batch();
-        b.update(db.collection("memberships").doc(id), { status: "completed", completedAt: now, certNo, certificateId: certRef.id });
+        const serial = db.collection("certificateVerifications").doc().id.toUpperCase(), certNo = `CLC-${new Date().getFullYear()}-${serial}`, certRef = db.collection("certificateVerifications").doc(certNo), now = FV.serverTimestamp(), b = db.batch();
+        b.update(db.collection("memberships").doc(id), { status: "completed", completedAt: now, certNo, certificateId: certNo });
         const member=members.find(m=>m.id===id);
         b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), studentInitials: initialsOf(member?.studentName), issuedAt: now, valid: true });
-        b.set(db.collection("certificateNumberIndex").doc(certNo), { verificationId: certRef.id }); await b.commit();
-        Object.assign(members.find(m => m.id === id), { status: "completed", certNo, certificateId: certRef.id });
+         await b.commit();
+        Object.assign(members.find(m => m.id === id), { status: "completed", certNo, certificateId: certNo });
       }
       if (a === "reopen") {
         const row = members.find(m => m.id === id), b = db.batch();
