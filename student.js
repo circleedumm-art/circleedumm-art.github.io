@@ -20,7 +20,7 @@ const T = {
   en: { classes: "Classes", schedule: "Schedule", progress: "Progress", messages: "Messages", profile: "Profile", site: "Site", logout: "Log out",
     hi: "Hello", enrolled: "Enrolled", completed: "Completed", noClass: "No classes yet. The admin will add you to a class.",
     week: "Weekly timetable", exams: "Exams", noExam: "No exams scheduled.", grades: "Grades", certs: "Certificates", noGrade: "No grades yet.",
-    noCert: "No certificates yet. They appear here when you complete a class.", view: "View certificate", print: "Print / Save as PDF",
+    noCert: "No certificates yet. They appear here when you complete a class.", view: "View certificate", print: "Download / Print as PDF",
     name: "Name", id: "Login ID", email: "Email", phone: "Phone", location: "Location", about: "About me", mine: "My details", save: "Save", saved: "Saved",
     pw: "Change password", cur: "Current password", nw: "New password", change: "Change password", pwOk: "Password changed",
     pwBad: "Current password is wrong, or the new one is too short (minimum 6).", loadFail: "Could not load some of your data.",
@@ -31,7 +31,7 @@ const T = {
   my: { classes: "အတန်းများ", schedule: "အချိန်ဇယား", progress: "တိုးတက်မှု", messages: "မက်ဆေ့ချ်", profile: "ကိုယ်ရေး", site: "ဝက်ဘ်ဆိုက်", logout: "ထွက်မည်",
     hi: "မင်္ဂလာပါ", enrolled: "တက်ရောက်နေသော", completed: "ပြီးဆုံးသော", noClass: "အတန်း မရှိသေးပါ။ အက်ဒမင်က အတန်းထဲ ထည့်ပေးပါမည်။",
     week: "အပတ်စဉ် အချိန်ဇယား", exams: "စာမေးပွဲများ", noExam: "စာမေးပွဲ မရှိသေးပါ။", grades: "အမှတ်များ", certs: "လက်မှတ်များ", noGrade: "အမှတ် မရှိသေးပါ။",
-    noCert: "လက်မှတ် မရှိသေးပါ။ အတန်းပြီးဆုံးသောအခါ ဤနေရာတွင် ပေါ်ပါမည်။", view: "လက်မှတ်ကြည့်မည်", print: "ပရင့်ထုတ် / PDF သိမ်းမည်",
+    noCert: "လက်မှတ် မရှိသေးပါ။ အတန်းပြီးဆုံးသောအခါ ဤနေရာတွင် ပေါ်ပါမည်။", view: "လက်မှတ်ကြည့်မည်", print: "PDF သိမ်းရန် / ပရင့်ထုတ်ရန်",
     name: "အမည်", id: "ID", email: "အီးမေးလ်", phone: "ဖုန်း", location: "နေရပ်", about: "ကိုယ်ပိုင်အကြောင်း", mine: "ကျွန်ုပ်၏ အချက်အလက်", save: "သိမ်းမည်", saved: "သိမ်းပြီးပါပြီ",
     pw: "စကားဝှက် ပြောင်းရန်", cur: "လက်ရှိ စကားဝှက်", nw: "စကားဝှက်အသစ်", change: "စကားဝှက် ပြောင်းမည်", pwOk: "စကားဝှက် ပြောင်းပြီးပါပြီ",
     pwBad: "လက်ရှိ စကားဝှက် မှားနေပါသည် သို့မဟုတ် အသစ်သည် တိုလွန်းသည် (အနည်းဆုံး ၆ လုံး)။", loadFail: "အချက်အလက် အချို့ ဖတ်မရပါ။",
@@ -221,7 +221,7 @@ $("#view").addEventListener("click", e => {
     showSheet(`<div class="cert"><img src="logo.png" alt="" height="56" onerror="this.remove()"><h4>${t("cert")}</h4><p>${t("certify")}</p><h3>${esc(me.name)}</h3>
       <p>${t("done")}</p><h3>${esc(cTitle(r.c))}</h3>
       <p class="meta">${t("attendance")}: ${s.pct === null ? "—" : s.pct + "%"} · ${t("gradeLbl")}: ${gp === null ? "—" : gp + "%"}</p>
-      <p class="meta">${t("date")}: ${fmt(r.m.completedAt)} · ${t("no")}: ${esc(r.m.certNo || "—")}</p><div id="certQr" data-id="${esc(r.m.certificateId || "")}"></div>${signatureBlock(lang)}</div>
+      <p class="meta">${t("date")}: ${fmt(r.m.completedAt)} · ${t("no")}: ${esc(r.m.certNo || "—")}</p><div id="certQr" data-id="${esc(r.m.certificateId || "")}"></div><a class="btn small" href="certificate.html?id=${encodeURIComponent(r.m.certificateId || "")}">Verify certificate</a>${signatureBlock(lang)}</div>
       <button class="btn wide" id="prt">${t("print")}</button>`);
     $("#prt").onclick = () => print();
     if (r.m.certificateId && window.QRCode) new QRCode($("#certQr"), { text: location.origin + "/certificate.html?id=" + encodeURIComponent(r.m.certificateId), width: 112, height: 112 });
