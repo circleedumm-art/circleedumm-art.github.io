@@ -319,3 +319,6 @@ h3{font-size:20px;text-align:center}
 #top .wrap>h2::before{content:"";position:absolute;left:18px;bottom:3px;width:120px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);
   transform:scaleX(0);transform-origin:left;transition:transform 1.6s cubic-bezier(.2,.8,.2,1) .3s}
 #top .reveal.in>h2::before{transform:scaleX(1)}
+
+/* Keep homework instructions and written submissions readable. */
+.hw-copy{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
