@@ -129,6 +129,12 @@ service cloud.firestore {
         && request.resource.data.dueDate is string && request.resource.data.dueDate.size() == 10
         && httpsOrEmpty(request.resource.data.get('link', ''))
         && request.resource.data.createdAt == request.time;
+      allow update: if teaches(resource.data.classId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','instructions','dueDate','link','updatedAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 150
+        && request.resource.data.instructions is string && request.resource.data.instructions.size() > 0 && request.resource.data.instructions.size() <= 3000
+        && request.resource.data.dueDate is string && request.resource.data.dueDate.size() == 10
+        && httpsOrEmpty(request.resource.data.get('link', ''));
       allow delete: if teaches(resource.data.classId);
     }
 
@@ -149,6 +155,20 @@ service cloud.firestore {
         && httpsOrEmpty(request.resource.data.get('url', ''))
         && request.resource.data.status == 'submitted'
         && request.resource.data.submittedAt == request.time;
+      allow create: if signedIn() && active()
+        && request.resource.data.keys().hasOnly(['homeworkId','classId','studentId','studentName','response','url','status','source','teacherId','completedAt'])
+        && request.resource.data.studentId is string
+        && id == request.resource.data.homeworkId + '_' + request.resource.data.studentId
+        && teaches(request.resource.data.classId)
+        && request.resource.data.teacherId == request.auth.uid
+        && request.resource.data.source == 'in_person'
+        && request.resource.data.status == 'completed_in_person'
+        && request.resource.data.response == ''
+        && request.resource.data.url == ''
+        && exists(/databases/$(database)/documents/homework/$(request.resource.data.homeworkId))
+        && get(/databases/$(database)/documents/homework/$(request.resource.data.homeworkId)).data.classId == request.resource.data.classId
+        && exists(/databases/$(database)/documents/memberships/$(request.resource.data.classId + '_' + request.resource.data.studentId))
+        && request.resource.data.completedAt == request.time;
       allow update: if signedIn() && active() && (
         (resource.data.studentId == request.auth.uid && inClass(resource.data.classId)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['response','url','status','submittedAt'])
@@ -161,7 +181,8 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/homework/$(resource.data.homeworkId)).data.teacherId == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['feedback','score','status','reviewedAt'])
           && request.resource.data.feedback is string && request.resource.data.feedback.size() <= 3000
-          && request.resource.data.status in ['reviewed', 'needs_revision']
+          && request.resource.data.status in ['reviewed', 'needs_revision', 'completed_in_person']
+          && (request.resource.data.status != 'completed_in_person' || resource.data.source == 'in_person')
           && request.resource.data.reviewedAt == request.time
           && (!request.resource.data.keys().hasAny(['score'])
             || (request.resource.data.score is number && request.resource.data.score >= 0 && request.resource.data.score <= 100)))
