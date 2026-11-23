@@ -320,3 +320,8 @@ h3{font-size:20px;text-align:center}
 .clc-notice{position:fixed;inset:0;z-index:1000;background:rgba(15,25,40,.42);display:grid;place-items:center;padding:20px}.clc-notice-card{width:min(520px,100%);padding:26px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 20px 70px rgba(0,0,0,.25)}.clc-notice-card h2{margin-top:0}.clc-notice-card p{white-space:pre-wrap;line-height:1.6}
 .tabs.eight a{white-space:nowrap}
 @media(max-width:720px){.tabs.eight a{font-size:11px;padding:8px 0}}
+
+/* Public verification form follows the same section width and card rhythm as the main page. */
+#verify .group{max-width:620px}
+#verify .group .btn{justify-self:start}
+@media(min-width:900px){#verify{scroll-margin-top:100px}}

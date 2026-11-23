@@ -24,7 +24,7 @@ const DAYS = {
 
 const T = {
   en: {
-    nav_about:"About", nav_programs:"Programs", nav_schedule:"Schedule", nav_alumni:"Alumni", nav_verify:"Certificate check", nav_enrol:"Enrol", login:"Log in",
+    nav_about:"About", nav_programs:"Programs", nav_schedule:"Schedule", nav_verify:"Certificate check", nav_enrol:"Enrol", login:"Log in",
     hero_title:"Learn together. Grow together.",
     hero_sub:"English and life-skills learning for youths in Myanmar, with volunteer teachers who care.",
     cta_enrol:"Enrol now", cta_programs:"See programs",
@@ -33,7 +33,7 @@ const T = {
     f1_k:"Founded", f1_v:"2021", f2_k:"Founder", f2_v:"Mr. Peter", f3_k:"Who we serve", f3_v:"Myanmar youths and adults",
     prog_h:"Programs", sched_h:"Class schedule",
     sched_note:"Times may change – please check before you join.", sched_none:"The schedule will be posted soon.", dashboard:"Dashboard", portal:"My classes",
-    alumni_h:"Already a CLC student?", alumni_p:"Sign in to your student portal to apply for another class. We will match your request to your existing student account.", alumni_cta:"Sign in and apply", verify_h:"Verify a certificate", verify_p:"Enter the certificate number to check whether it was issued by Circle Learning Centre.", verify_code:"Certificate number", verify_btn:"Check certificate", enrol_h:"Enrol in a class",
+    verify_h:"Verify a certificate", verify_p:"Enter the certificate number to check whether it was issued by Circle Learning Centre.", verify_code:"Certificate number", verify_btn:"Check certificate", alumni_h:"Already a CLC student?", alumni_p:"Sign in to your student portal to apply for another class. We will link your request to your existing student account.", alumni_cta:"Sign in and apply", enrol_h:"Enrol in a class",
     enrol_p:"Send your details. A teacher or admin will review them and email you your login ID and password once approved.",
     f_name:"Full name", f_contact:"Email address", f_course:"Program", f_note:"Note", f_submit:"Send enrolment",
     f_ok:"Received. If you are chosen for a CLC class, we will notify you by email.",
@@ -52,7 +52,7 @@ const T = {
     l_bad:"Wrong ID or password.", l_notadmin:"This Google account is not the CLC admin.", l_in:"Signed in.", e_fail:"Could not send. Check your internet and try again."
   },
   my: {
-    nav_about:"အကြောင်း", nav_programs:"သင်တန်းများ", nav_schedule:"အချိန်ဇယား", nav_alumni:"ကျောင်းသားဟောင်းများ", nav_verify:"လက်မှတ်စစ်ဆေးရန်", nav_enrol:"စာရင်းသွင်း", login:"ဝင်ရန်",
+    nav_about:"အကြောင်း", nav_programs:"သင်တန်းများ", nav_schedule:"အချိန်ဇယား", nav_verify:"လက်မှတ်စစ်ဆေးရန်", nav_enrol:"စာရင်းသွင်း", login:"ဝင်ရန်",
     hero_title:"အတူလေ့လာသင်ယူရင်း အတူတိုးတက်ကြမယ်",
     hero_sub:"အင်္ဂလိပ်စာ သင်ယူလိုသော မြန်မာနိုင်ငံသားတိုင်း အဖိုးအခ အသက်သာဆုံးနည်းလမ်းဖြင့် အင်္ဂလိပ်စာတတ်ရမည်။",
     cta_enrol:"စာရင်းသွင်းမည်", cta_programs:"သင်တန်းများကြည့်မည်",
@@ -61,7 +61,7 @@ const T = {
     f1_k:"စတင်တည်ထောင်ချိန်", f1_v:"၂၀၂၁", f2_k:"တည်ထောင်သူ", f2_v:"ဆရာပီတာ", f3_k:"ဝန်ဆောင်မှုပေးသူများ", f3_v:"မြန်မာလူငယ်နှင့် လူကြီးများ",
     prog_h:"သင်တန်းများ", sched_h:"အတန်း အချိန်ဇယား",
     sched_note:"အချိန်များ ပြောင်းလဲနိုင်ပါသည်။ မတက်ခင် ပြန်လည်စစ်ဆေးပါ။", sched_none:"အချိန်ဇယားကို မကြာမီ ကြေညာပါမည်။", dashboard:"Dashboard", portal:"ကျွန်ုပ်၏ အတန်းများ",
-    alumni_h:"CLC ကျောင်းသားဟောင်းများ", alumni_p:"အခြားသင်တန်းသို့ လျှောက်ထားရန် ကျောင်းသားပေါ်တယ်သို့ ဝင်ပါ။ သင့်လျှောက်လွှာကို ရှိပြီးသား ကျောင်းသားအကောင့်နှင့် ချိတ်ဆက်ပေးပါမည်။", alumni_cta:"ဝင်ပြီး လျှောက်ထားမည်", verify_h:"သင်တန်းဆင်းလက်မှတ် စစ်ဆေးရန်", verify_p:"Circle Learning Centre မှ ထုတ်ပေးသော လက်မှတ် ဟုတ်မဟုတ် စစ်ဆေးရန် လက်မှတ်နံပါတ် ထည့်ပါ။", verify_code:"လက်မှတ်နံပါတ်", verify_btn:"စစ်ဆေးမည်", enrol_h:"သင်တန်း စာရင်းသွင်းရန်",
+    verify_h:"သင်တန်းဆင်းလက်မှတ် စစ်ဆေးရန်", verify_p:"Circle Learning Centre မှ ထုတ်ပေးသော လက်မှတ် ဟုတ်မဟုတ် စစ်ဆေးရန် လက်မှတ်နံပါတ် ထည့်ပါ။", verify_code:"လက်မှတ်နံပါတ်", verify_btn:"စစ်ဆေးမည်", alumni_h:"CLC ကျောင်းသားဟောင်းဖြစ်ပါသလား။", alumni_p:"အခြားသင်တန်းသို့ လျှောက်ထားရန် ကျောင်းသားပေါ်တယ်သို့ ဝင်ပါ။ သင့်လျှောက်လွှာကို ရှိပြီးသားအကောင့်နှင့် ချိတ်ဆက်ပေးပါမည်။", alumni_cta:"ဝင်ပြီး လျှောက်ထားမည်", enrol_h:"သင်တန်း စာရင်းသွင်းရန်",
     enrol_p:"သင့်အချက်အလက်ကို ပေးပို့ပါ။ ဆရာ သို့မဟုတ် အက်ဒမင်က စစ်ဆေးပြီး အတည်ပြုပြီးလျှင် ID နှင့် စကားဝှက်ကို အီးမေးလ်ဖြင့် ပေးပို့ပါမည်။",
     f_name:"အမည်အပြည့်အစုံ", f_contact:"အီးမေးလ်", f_course:"သင်တန်း", f_note:"မှတ်ချက်", f_submit:"လျှောက်ထားမည်",
     f_ok:"လက်ခံရရှိပါပြီ။ CLC သင်တန်းအတွက် ရွေးချယ်ခံရပါက အီးမေးလ်ဖြင့် အကြောင်းကြားပါမည်။",

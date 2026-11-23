@@ -52,11 +52,11 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 let siteTab = "programs", guides = {}, reviews = [];
 const view = () => { let v = (location.hash || "#enrolments").slice(1); if (v === "programs") v = "site"; return VIEWS[v] ? v : "enrolments"; };
 const progName = id => (programs.find(p => p.id === id) || {}).en || "Program";
+const initialsOf = name => String(name || "").trim().split(/\s+/).filter(Boolean).map(part => Array.from(part)[0].toLocaleUpperCase()).join(". ") + ".";
 let certMigrationRunning = false;
 async function migrateLegacyCertificates() {
   if (certMigrationRunning || !classes.length) return;
   const pending = members.filter(m => m.status === "completed" && !m.certificateId);
-  if (!pending.length) return;
   certMigrationRunning = true;
   try {
     for (const m of pending) {
@@ -66,13 +66,13 @@ async function migrateLegacyCertificates() {
       const certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`;
       const issuedAt = firebase.firestore.FieldValue.serverTimestamp(), b = db.batch();
       b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certRef.id });
-      b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt, valid: true });
+      b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), studentInitials: initialsOf(m.studentName), issuedAt, valid: true });
       b.set(db.collection("certificateNumberIndex").doc(certNo), { verificationId: certRef.id });
       await b.commit();
       Object.assign(m, { certNo, certificateId: certRef.id });
     }
   try {
-    for (const m of members.filter(x=>x.status==="completed" && x.certificateId && x.certNo)) { const ref=db.collection("certificateNumberIndex").doc(m.certNo), exists=await ref.get(); if(!exists.exists) await ref.set({verificationId:m.certificateId}); }
+    for (const m of members.filter(x=>x.status==="completed" && x.certificateId && x.certNo)) { const ref=db.collection("certificateNumberIndex").doc(String(m.certNo).trim().toUpperCase()), exists=await ref.get(); if(!exists.exists) await ref.set({verificationId:m.certificateId}); const verify=db.collection("certificateVerifications").doc(m.certificateId), record=await verify.get(); if(record.exists && !record.data().studentInitials) await verify.update({studentInitials:initialsOf(m.studentName)}); }
   } catch (err) { console.error("Certificate lookup index migration failed", err); }
   } catch (err) { console.error("Certificate migration failed", err); }
   finally { certMigrationRunning = false; }
@@ -441,7 +441,8 @@ async function openRecords(c) {
       if (a === "complete") {
         const certRef = db.collection("certificateVerifications").doc(), certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`, now = FV.serverTimestamp(), b = db.batch();
         b.update(db.collection("memberships").doc(id), { status: "completed", completedAt: now, certNo, certificateId: certRef.id });
-        b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt: now, valid: true });
+        const member=members.find(m=>m.id===id);
+        b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), studentInitials: initialsOf(member?.studentName), issuedAt: now, valid: true });
         b.set(db.collection("certificateNumberIndex").doc(certNo), { verificationId: certRef.id }); await b.commit();
         Object.assign(members.find(m => m.id === id), { status: "completed", certNo, certificateId: certRef.id });
       }
