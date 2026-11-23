@@ -223,7 +223,7 @@ $("#view").addEventListener("click", e => {
       <p class="meta">${t("attendance")}: ${s.pct === null ? "—" : s.pct + "%"} · ${t("gradeLbl")}: ${gp === null ? "—" : gp + "%"}</p>
       <p class="meta">${t("date")}: ${fmt(r.m.completedAt)} · ${t("no")}: ${esc(r.m.certNo || "—")}</p><div id="certQr" data-id="${esc(r.m.certificateId || "")}"></div><a class="btn small" href="certificate.html?id=${encodeURIComponent(r.m.certificateId || "")}">Verify certificate</a>${signatureBlock(lang)}</div>
       <button class="btn wide" id="prt">${t("print")}</button>`);
-    $("#prt").onclick = () => print();
+    $("#prt").onclick = () => { const cert = $(".cert"); if (window.html2pdf) html2pdf().set({ margin: 10, filename: (r.m.certNo || "CLC-certificate") + ".pdf", image: { type: "jpeg", quality: .98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } }).from(cert).save(); else print(); };
     if (r.m.certificateId && window.QRCode) new QRCode($("#certQr"), { text: location.origin + "/certificate.html?id=" + encodeURIComponent(r.m.certificateId), width: 112, height: 112 });
   }
 });
