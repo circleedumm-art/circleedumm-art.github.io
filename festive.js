@@ -19,10 +19,12 @@
     ["independence", "01-03", "01-04"],
     ["thingyan", "04-09", "04-18"],
     ["mayday", "04-30", "05-01"],
-    ["teachers", "10-04", "10-05"]            // World Teachers' Day, 5 October
+    ["teachers", "10-04", "10-05"],
+    ["union", "02-11", "02-12"], ["peasants", "03-01", "03-02"], ["armedforces", "03-26", "03-27"], ["martyrs", "07-18", "07-19"]
   ];
   // Full-moon day of Thadingyut. Decorations run from 2 days before to 1 day after.
   const THADINGYUT_FULL_MOON = { 2026: "2026-10-26", 2027: "2027-10-15" };
+  const LUNAR_FESTIVALS = { tabaung: {2026:"2026-03-02",2027:"2027-03-22"}, kason:{2026:"2026-05-30",2027:"2027-05-20"}, waso:{2026:"2026-07-29",2027:"2027-07-18"}, tazaungmone:{2026:"2026-11-23",2027:"2027-11-13"} };
 
   const pad = n => String(n).padStart(2, "0");
   const now = new Date(), Y = now.getFullYear(), MD = pad(now.getMonth() + 1) + "-" + pad(now.getDate());
@@ -36,6 +38,7 @@
       const diff = Math.round((t0 - d) / 864e5);
       if (diff >= -2 && diff <= 1) return "thadingyut";
     }
+    for (const [festival, dates] of Object.entries(LUNAR_FESTIVALS)) { const full = dates[Y]; if (full) { const diff = Math.round((new Date(full + "T00:00") - new Date(Y, now.getMonth(), now.getDate())) / 864e5); if (diff >= -2 && diff <= 1) return festival; } }
     return null;
   }
   const id = activeEvent();
@@ -54,6 +57,7 @@
     teachers:     { en: "Happy Teachers' Day", my: "ကမ္ဘာ့ဆရာများနေ့တွင် ဆရာ၊ဆရာမများအား ဂုဏ်ပြုပါသည်", bg: "linear-gradient(135deg,#1D5FA8,#2E9F8F)" },
     thadingyut:   { en: "Happy Thadingyut Festival of Lights", my: "မင်္ဂလာရှိသော သီတင်းကျွတ်အခါသမယလေး ဖြစ်ပါစေ", bg: "linear-gradient(135deg,#7A2E8F,#E2701F)" }
   };
+  Object.assign(LOOK, { union:{en:"Union Day",my:"ပြည်ထောင်စုနေ့",bg:"linear-gradient(135deg,#1D5FA8,#C9962B)"}, peasants:{en:"Peasants’ Day",my:"တောင်သူလယ်သမားနေ့",bg:"linear-gradient(135deg,#2F6B4F,#C9962B)"}, armedforces:{en:"Armed Forces Day",my:"တပ်မတော်နေ့",bg:"linear-gradient(135deg,#2C4266,#C9962B)"}, martyrs:{en:"Martyrs’ Day",my:"အာဇာနည်နေ့",bg:"linear-gradient(135deg,#542E38,#C9962B)"}, tabaung:{en:"Tabaung Full Moon Festival",my:"တပေါင်းလပြည့်ပွဲတော်",bg:"linear-gradient(135deg,#6A4C93,#E8C76A)"}, kason:{en:"Kason Full Moon Day",my:"ကဆုန်လပြည့်နေ့",bg:"linear-gradient(135deg,#2F6B4F,#E8C76A)"}, waso:{en:"Waso Full Moon Day",my:"ဝါဆိုလပြည့်နေ့",bg:"linear-gradient(135deg,#1D5FA8,#E8C76A)"}, tazaungmone:{en:"Tazaungmone Full Moon Festival",my:"တန်ဆောင်မုန်းလပြည့်ပွဲတော်",bg:"linear-gradient(135deg,#7A2E8F,#E8C76A)"} });
   const look = LOOK[id];
   if (!look) return;
 

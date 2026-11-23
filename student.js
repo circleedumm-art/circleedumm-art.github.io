@@ -115,7 +115,7 @@ const VIEW = {
     const card = r => {
       const c = r.c, done = r.m.status === "completed", lv = levelText(c.level, lang), mats = materials.filter(x => x.classId === c.id);
       return `<p class="sub">${esc(cTitle(c))}</p><ul class="group">
-        ${li(`<div class="grow"><small>${esc(scheduleLine(c, DAYS[lang], lang))}</small><small>${esc(tzLabel(c.tz || DEFAULT_TZ))}</small>${c.startDate ? `<small>${esc(durationText(c, lang))}</small>` : ""}${sessionsOf(c).map(x => yourTime(x, c)).join("")}${c["venue_" + lang] ? `<small>${esc(c["venue_" + lang])}</small>` : ""}${done ? `<small>${t("completed")}: ${fmt(r.m.completedAt)}</small>` : ""}</div>${lv ? `<span class="pill s-enrolled">${esc(lv)}</span>` : ""}`)}
+        ${li(`<div class="grow"><small>${esc(scheduleLine(c, DAYS[lang], lang))}</small><small>${esc(tzLabel(c.tz || DEFAULT_TZ))}</small><small>Class fee: ${Number(c.priceMMK || 0) === 0 ? "Free" : Number(c.priceMMK).toLocaleString() + " MMK"} · Paid: ${Number(r.m.paidMMK || 0).toLocaleString()} MMK · Balance: ${Math.max(0, Number(c.priceMMK || 0) - Number(r.m.paidMMK || 0)).toLocaleString()} MMK</small>${c.startDate ? `<small>${esc(durationText(c, lang))}</small>` : ""}${sessionsOf(c).map(x => yourTime(x, c)).join("")}${c["venue_" + lang] ? `<small>${esc(c["venue_" + lang])}</small>` : ""}${done ? `<small>${t("completed")}: ${fmt(r.m.completedAt)}</small>` : ""}</div>${lv ? `<span class="pill s-enrolled">${esc(lv)}</span>` : ""}`)}
         ${c.teacherId ? `<li class="item go" tabindex="0" data-teacher="${c.teacherId}"><div class="grow"><small>${t("teacher")}</small><b>${esc(c.teacherName || "")}</b></div></li>` : ""}
         ${!done && (safeUrl(c.telegramUrl) || safeUrl(c.zoomUrl)) ? li(`<div class="rowlinks">${linkBtn(c.telegramUrl, "✈️ " + t("tg"), "")}${linkBtn(c.zoomUrl, "🎥 " + t("zoom"), "")}</div>`) : ""}
         ${mats.map(m => li(`<div class="grow"><small>📎 ${t("material")}</small><b>${esc(m.title)}</b></div>${linkBtn(m.url, t("open"))}`)).join("")}</ul>`;
@@ -221,9 +221,10 @@ $("#view").addEventListener("click", e => {
     showSheet(`<div class="cert"><img src="logo.png" alt="" height="56" onerror="this.remove()"><h4>${t("cert")}</h4><p>${t("certify")}</p><h3>${esc(me.name)}</h3>
       <p>${t("done")}</p><h3>${esc(cTitle(r.c))}</h3>
       <p class="meta">${t("attendance")}: ${s.pct === null ? "—" : s.pct + "%"} · ${t("gradeLbl")}: ${gp === null ? "—" : gp + "%"}</p>
-      <p class="meta">${t("date")}: ${fmt(r.m.completedAt)} · ${t("no")}: ${esc(r.m.certNo || "—")}</p>${signatureBlock(lang)}</div>
+      <p class="meta">${t("date")}: ${fmt(r.m.completedAt)} · ${t("no")}: ${esc(r.m.certNo || "—")}</p><div id="certQr" data-id="${esc(r.m.certificateId || "")}"></div>${signatureBlock(lang)}</div>
       <button class="btn wide" id="prt">${t("print")}</button>`);
     $("#prt").onclick = () => print();
+    if (r.m.certificateId && window.QRCode) new QRCode($("#certQr"), { text: location.origin + "/certificate.html?id=" + encodeURIComponent(r.m.certificateId), width: 112, height: 112 });
   }
 });
 $("#view").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("go")) e.target.click(); });

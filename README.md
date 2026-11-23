@@ -37,6 +37,14 @@ Plain HTML, CSS and JavaScript (no build step), Firebase Authentication and Clou
 - Student and teacher accounts are created by the admin only. Guests can only add a pending enrolment.
 - Only `https://` links are shown or opened.
 
+## Portal improvements
+
+- Class fees are initialized to **0 MMK (Free)**. Admins can set a fee per class and record payments from the class student list. Payment totals and balances appear in the student portal.
+- Alumni can apply to public classes they have not attended. Admins review applications in the Applications tab.
+- Completion certificates receive unique certificate numbers and QR links to a public validity check. Students can print or save certificates as PDF from the browser print dialog.
+- Myanmar festival dates and decorations are maintained in `festive.js`; update its full moon date tables when official dates are announced.
+- Portal announcements are shown as dismissible messages.
+
 ## Yearly upkeep
 
 - **Thadingyut decorations:** add next year's full-moon date to `THADINGYUT_FULL_MOON` in `festive.js`.

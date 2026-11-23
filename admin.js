@@ -9,7 +9,7 @@ const store = { get: k => { try { return localStorage.getItem(k); } catch { retu
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(), db = firebase.firestore();
-let enrols = [], users = [], programs = [], classes = [], members = [], reports = [], anns = [], started = false;
+let enrols = [], users = [], programs = [], classes = [], members = [], reports = [], anns = [], applications = [], started = false;
 
 /* ---------- Theme ---------- */
 function setTheme(t) { document.documentElement.dataset.theme = t; $('meta[name="theme-color"]').content = t === "dark" ? "#000000" : "#F2F2F7"; }
@@ -32,12 +32,13 @@ function start() {
   db.collection("enrolments").orderBy("createdAt", "desc").onSnapshot(s => { enrols = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("users").onSnapshot(s => { users = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("programs").orderBy("order").onSnapshot(s => { programs = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
-  db.collection("classes").onSnapshot(s => { classes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
+  db.collection("classes").onSnapshot(s => { classes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); migrateLegacyCertificates(); }, fail);
   db.collection("reviews").onSnapshot(s => { reviews = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("siteContent").doc("guides").onSnapshot(d => { guides = d.exists ? d.data() : {}; render(); }, fail);
   db.collection("announcements").onSnapshot(s => { anns = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("reports").onSnapshot(s => { reports = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
-  db.collection("memberships").onSnapshot(s => { members = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
+  db.collection("memberships").onSnapshot(s => { members = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); migrateLegacyCertificates(); }, fail);
+  db.collection("classApplications").onSnapshot(s => { applications = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
 }
 
 /* ---------- Views ---------- */
@@ -45,12 +46,33 @@ const mail = (to, subject, body) => `mailto:${encodeURIComponent(to)}?subject=${
 const when = x => x && x.toDate ? x.toDate().toLocaleDateString() : "";
 
 const SESS_L = { session: "Session", optional: "optional", none: "— none —", needTimes: "Each session needs a day, a start time and an end time.", sameTime: "Start and end time cannot be the same." };
-const VIEWS = { enrolments: "Enrolments", students: "Students", teachers: "Teachers", classes: "Classes", announcements: "Announcements", site: "Site", reports: "Reports" };
+const VIEWS = { enrolments: "Enrolments", students: "Students", teachers: "Teachers", classes: "Classes", announcements: "Announcements", site: "Site", reports: "Reports", applications: "Class applications" };
 const ADD = { students: "Add student", teachers: "Add teacher", classes: "Add class", announcements: "Add announcement", site: "Add program" };
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 let siteTab = "programs", guides = {}, reviews = [];
 const view = () => { let v = (location.hash || "#enrolments").slice(1); if (v === "programs") v = "site"; return VIEWS[v] ? v : "enrolments"; };
 const progName = id => (programs.find(p => p.id === id) || {}).en || "Program";
+let certMigrationRunning = false;
+async function migrateLegacyCertificates() {
+  if (certMigrationRunning || !classes.length) return;
+  const pending = members.filter(m => m.status === "completed" && !m.certificateId);
+  if (!pending.length) return;
+  certMigrationRunning = true;
+  try {
+    for (const m of pending) {
+      const c = classes.find(x => x.id === m.classId);
+      if (!c) continue;
+      const certRef = db.collection("certificateVerifications").doc();
+      const certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`;
+      const issuedAt = firebase.firestore.FieldValue.serverTimestamp(), b = db.batch();
+      b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certRef.id });
+      b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt, valid: true });
+      await b.commit();
+      Object.assign(m, { certNo, certificateId: certRef.id });
+    }
+  } catch (err) { console.error("Certificate migration failed", err); }
+  finally { certMigrationRunning = false; }
+}
 
 function render() {
   const v = view();
@@ -115,6 +137,9 @@ function render() {
         <span class="pill s-${live ? "active" : "pending"}">${live ? "live" : "scheduled"}</span>
         <div class="acts">${own ? `<button class="btn small ghost" data-act="editAnn" data-id="${a.id}">Edit</button>` : ""}<button class="btn small danger" data-act="delAnn" data-id="${a.id}">Delete</button></div></li>`;
     }).join("");
+  } else if (v === "applications") {
+    empty = "No class applications yet.";
+    html = applications.slice().sort((a,b)=>ts(b.createdAt)-ts(a.createdAt)).map(a=>{const c=classes.find(x=>x.id===a.classId),u=users.find(x=>x.id===a.studentId);return `<li class="item"><div class="grow"><b>${esc(u?.name||a.studentName||"Student")}</b><small>${esc(progName(a.programId))}${c?.label?" · "+esc(c.label):""} · ${esc(a.status)}</small></div>${a.status==="pending"?`<div class="acts"><button class="btn small" data-act="approveApplication" data-id="${a.id}">Approve</button><button class="btn small danger" data-act="rejectApplication" data-id="${a.id}">Reject</button></div>`:""}</li>`}).join("");
   } else if (v === "reports") {
     empty = "No reports yet. Reports from students and teachers appear here.";
     html = reports.slice().sort((a, b) => ts(b.createdAt) - ts(a.createdAt)).filter(r => hit({ name: r.fromName + " " + (r.subject || ""), email: r.text, loginId: r.loginId })).map(r => `<li class="item"><div class="grow">
@@ -153,6 +178,8 @@ $("#list").addEventListener("click", async e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const { act, id } = b.dataset, en = enrols.find(x => x.id === id), us = users.find(x => x.id === id);
   try {
+    if (act === "approveApplication") { const ap=applications.find(x=>x.id===id); if(ap){const b=db.batch(); b.set(db.collection("memberships").doc(`${ap.classId}_${ap.studentId}`),{classId:ap.classId,studentId:ap.studentId,studentName:ap.studentName||users.find(x=>x.id===ap.studentId)?.name||"Student",loginId:users.find(x=>x.id===ap.studentId)?.loginId||"",status:"enrolled",paidMMK:0,createdAt:FV.serverTimestamp()});b.update(db.collection("classApplications").doc(id),{status:"approved",reviewedAt:FV.serverTimestamp()});await b.commit();}}
+    if (act === "rejectApplication") await db.collection("classApplications").doc(id).update({status:"rejected",reviewedAt:FV.serverTimestamp()});
     if (act === "approve") { await db.collection("enrolments").doc(id).update({ status: "approved" }); openCreate({ role: "student", name: en.name, email: en.email, enrolId: id }); }
     if (act === "create") openCreate({ role: "student", name: en.name, email: en.email, enrolId: id });
     if (act === "reject") await db.collection("enrolments").doc(id).update({ status: "rejected" });
@@ -287,7 +314,7 @@ function openClass(c = {}) {
       ${sessionFields(sessionsOf(c), DAYS, SESS_L)}
       <label><span>Time zone</span><select name="tz">${tzOptions(c.tz)}</select></label>
       <label><span>Start date</span><input type="date" name="startDate" value="${esc(c.startDate)}"></label>
-      <label><span>Duration</span><select name="durationMonths">${opts([["", "— not set —"], ...Array.from({ length: 12 }, (_, i) => [i + 1, `${i + 1} month${i ? "s" : ""}`])], c.durationMonths || "")}</select></label>
+      <label><span>Class price (MMK)</span><input name="priceMMK" type="number" min="0" step="1" value="${esc(c.priceMMK ?? 0)}"></label>\n      <label><span>Duration</span><select name="durationMonths">${opts([["", "— not set —"], ...Array.from({ length: 12 }, (_, i) => [i + 1, `${i + 1} month${i ? "s" : ""}`])], c.durationMonths || "")}</select></label>
       <label><span>Place (English)</span><input name="venue_en" placeholder="Online via Zoom" value="${esc(c.venue_en)}"></label>
       <label><span>Place (မြန်မာ)</span><input name="venue_my" value="${esc(c.venue_my)}"></label>
       <label><span>Level</span><select name="level">${opts([["", "— not set —"], ...LEVELS.map(l => [l, levelText(l, "en") + " · " + LEVEL_NAME.my[l]])], c.level || "")}</select></label>
@@ -304,17 +331,17 @@ function openClass(c = {}) {
   $("#mForm").addEventListener("input", updDur); $("#mForm").addEventListener("change", updDur); updDur();
   $("#mSave").onclick = async () => {
     const f = $("#mForm").elements, t = users.find(u => u.id === f.teacherId.value);
-    if (!!f.startDate.value !== !!f.durationMonths.value) return mErr("Set both the start date and the duration, or leave both empty.");
+    if (!Number.isInteger(Number(f.priceMMK.value)) || Number(f.priceMMK.value) < 0) return mErr("Enter a whole-number MMK class price.");\n    if (!!f.startDate.value !== !!f.durationMonths.value) return mErr("Set both the start date and the duration, or leave both empty.");
     const sr = readSessions(f, SESS_L); if (sr.error) return mErr(sr.error);
     const d = { programId: f.programId.value, label: f.label.value.trim(), teacherId: f.teacherId.value, teacherName: t ? t.name : "",
       ...scheduleFields(sr.list, f.tz.value), venue_en: f.venue_en.value.trim(), venue_my: f.venue_my.value.trim() || f.venue_en.value.trim(),
-      status: f.status.value, public: f.public.value === "yes", level: f.level.value, startDate: f.startDate.value, durationMonths: f.durationMonths.value ? Number(f.durationMonths.value) : "", telegramUrl: safeUrl(f.telegramUrl.value), zoomUrl: safeUrl(f.zoomUrl.value) };
+      status: f.status.value, public: f.public.value === "yes", level: f.level.value, priceMMK: Number(f.priceMMK.value), startDate: f.startDate.value, durationMonths: f.durationMonths.value ? Number(f.durationMonths.value) : "", telegramUrl: safeUrl(f.telegramUrl.value), zoomUrl: safeUrl(f.zoomUrl.value) };
     if ((f.telegramUrl.value.trim() && !d.telegramUrl) || (f.zoomUrl.value.trim() && !d.zoomUrl)) return mErr("Links must start with https://");
     const ref = c.id ? db.collection("classes").doc(c.id) : db.collection("classes").doc(), pub = db.collection("publicSchedule").doc(ref.id);
     const b = db.batch();
     b.set(ref, { ...d, ...(c.id ? {} : { createdAt: firebase.firestore.FieldValue.serverTimestamp() }) }, { merge: true });
     // Only non-sensitive fields go to the public schedule (no teacher or student information).
-    if (d.public && d.status === "active") b.set(pub, { programId: d.programId, label: d.label, day: d.day, time: d.time, sessions: d.sessions, tz: d.tz, venue_en: d.venue_en, venue_my: d.venue_my, level: d.level, startDate: d.startDate, durationMonths: d.durationMonths });
+    if (d.public && d.status === "active") b.set(pub, { programId: d.programId, label: d.label, day: d.day, time: d.time, sessions: d.sessions, tz: d.tz, venue_en: d.venue_en, venue_my: d.venue_my, level: d.level, startDate: d.startDate, durationMonths: d.durationMonths, priceMMK: d.priceMMK });
     else b.delete(pub);
     try { await b.commit(); closeModal(); toast("Class saved"); } catch (e) { console.error(e); mErr("Could not save. Try again."); }
   };
@@ -338,12 +365,12 @@ function openMembers(c) {
   const stu = users.filter(u => u.role === "student" && (u.status !== "inactive" || cur.has(u.id))).sort((a, b) => (a.loginId || "").localeCompare(b.loginId || ""));
   sheet(`Students · ${progName(c.programId)}`, `
     <ul class="group" style="margin-top:14px">${stu.map(u => `<li><label class="chk"><input type="checkbox" value="${u.id}" ${cur.has(u.id) ? "checked" : ""}>
-      <span><b>${esc(u.name)}</b><small>ID: ${esc(u.loginId)}</small></span></label></li>`).join("") || `<li class="empty"><div>No students yet. Create student accounts first.</div></li>`}</ul>
+      <span><b>${esc(u.name)}</b><small>ID: ${esc(u.loginId)}</small><small>Paid (MMK): <input type="number" min="0" step="1" data-paid="${u.id}" value="${Number(members.find(m=>m.classId===c.id&&m.studentId===u.id)?.paidMMK||0)}"></small></span></label></li>`).join("") || `<li class="empty"><div>No students yet. Create student accounts first.</div></li>`}</ul>
     <button class="btn wide" id="mSave">Save</button>`);
   $("#mSave").onclick = async () => {
     const now = new Set($$('#modal input[type=checkbox]:checked').map(i => i.value)), b = db.batch();
-    now.forEach(uid => { if (!cur.has(uid)) { const u = users.find(x => x.id === uid);
-      b.set(db.collection("memberships").doc(`${c.id}_${uid}`), { classId: c.id, studentId: uid, studentName: u.name, loginId: u.loginId, status: "enrolled", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); } });
+    now.forEach(uid => { const paidInput = $(`#modal [data-paid="${uid}"]`), paidMMK = Number(paidInput?.value || 0); if (!Number.isInteger(paidMMK) || paidMMK < 0) return mErr("Payment must be a non-negative whole number."); if (!cur.has(uid)) { const u = users.find(x => x.id === uid);
+      b.set(db.collection("memberships").doc(`${c.id}_${uid}`), { classId: c.id, studentId: uid, studentName: u.name, loginId: u.loginId, status: "enrolled", paidMMK, paymentHistory: paidMMK ? [{ amountMMK: paidMMK, recordedAt: new Date().toISOString(), recordedBy: auth.currentUser.uid }] : [], createdAt: firebase.firestore.FieldValue.serverTimestamp() }); } else { const m=members.find(x=>x.classId===c.id&&x.studentId===uid); if(m && paidMMK!==Number(m.paidMMK||0)) b.update(db.collection("memberships").doc(m.id),{paidMMK,paymentHistory:firebase.firestore.FieldValue.arrayUnion({amountMMK:paidMMK,recordedAt:new Date().toISOString(),recordedBy:auth.currentUser.uid})}); } });
     cur.forEach(uid => { if (!now.has(uid)) b.delete(db.collection("memberships").doc(`${c.id}_${uid}`)); });
     try { await b.commit(); closeModal(); toast("Class students updated"); } catch (e) { console.error(e); mErr("Could not save. Try again."); }
   };
@@ -404,13 +431,16 @@ async function openRecords(c) {
       }
       if (a === "delGrade") await db.collection("grades").doc(id).delete();
       if (a === "complete") {
-        const certNo = `CLC-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
-        await db.collection("memberships").doc(id).update({ status: "completed", completedAt: FV.serverTimestamp(), certNo });
-        Object.assign(members.find(m => m.id === id), { status: "completed", certNo });
+        const certRef = db.collection("certificateVerifications").doc(), certNo = `CLC-${new Date().getFullYear()}-${certRef.id.toUpperCase()}`, now = FV.serverTimestamp(), b = db.batch();
+        b.update(db.collection("memberships").doc(id), { status: "completed", completedAt: now, certNo, certificateId: certRef.id });
+        b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), issuedAt: now, valid: true }); await b.commit();
+        Object.assign(members.find(m => m.id === id), { status: "completed", certNo, certificateId: certRef.id });
       }
       if (a === "reopen") {
-        await db.collection("memberships").doc(id).update({ status: "enrolled", completedAt: FV.delete(), certNo: FV.delete() });
-        Object.assign(members.find(m => m.id === id), { status: "enrolled", certNo: "" });
+        const row = members.find(m => m.id === id), b = db.batch();
+        b.update(db.collection("memberships").doc(id), { status: "enrolled", completedAt: FV.delete(), certNo: FV.delete(), certificateId: FV.delete() });
+        if (row?.certificateId) b.delete(db.collection("certificateVerifications").doc(row.certificateId));
+        await b.commit(); Object.assign(row || {}, { status: "enrolled", certNo: "", certificateId: "" });
       }
       openRecords(c);
     } catch (err) { console.error(err); mErr("Could not save. Try again."); }
