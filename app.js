@@ -106,7 +106,7 @@ function renderLang() {
     return `<li class="cls"><div class="c"><b>${esc((p ? p[lang] : "") + (s.label ? " - " + s.label : ""))}</b>
       <span class="when">${esc(whenText(s, DAYS[lang], lang))}</span>
       <small>${esc(s["venue_" + lang] || "")}${s.level ? (s["venue_" + lang] ? " · " : "") + esc(levelText(s.level, lang)) : ""}</small>
-      <small>${esc(tzLabel(s.tz || DEFAULT_TZ))}${dur ? " · " + esc(dur) : ""}</small></div></li>`; }).join("") : `<li class="empty">${T[lang].sched_none}</li>`;
+      <small>${esc(tzLabel(s.tz || DEFAULT_TZ))}${dur ? " · " + esc(dur) : ""}</small><small>${Number(s.priceMMK || 0) === 0 ? "Free" : Number(s.priceMMK).toLocaleString() + " MMK"}</small></div></li>`; }).join("") : `<li class="empty">${T[lang].sched_none}</li>`;
 
   const gl = [["guest", "g_guest"], ["student", "g_student"], ["teacher", "g_teacher"]].filter(([k]) => safeUrl(DATA.guides[k]));
   $("#guide").hidden = !gl.length;
