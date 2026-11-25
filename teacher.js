@@ -128,7 +128,7 @@ $("#view").addEventListener("click", e => {
     m.hidden = false; $("#mc").onclick = () => { m.hidden = true; m.innerHTML = ""; };
   }
 });
-$("#view").addEventListener("keydown", e => { if (e.key === "Enter") e.target.click(); });
+$("#view").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("go")) e.target.click(); });
 
 async function renderClass(c, tab, token) {
   $("#title").textContent = cTitle(c);
@@ -181,10 +181,8 @@ const BODY = {
       <button class="btn wide" id="eadd">${t("addExam")}</button>`;
   },
   info(c, d) {
-    const rate = m => { let a = 0, n = 0; d.att.forEach(x => { const v = x.records && x.records[m.studentId]; if (v === "present" || v === "late") { a++; n++; } else if (v === "absent") n++; }); return n ? `${a}/${n} (${Math.round(a / n * 100)}%)` : "—"; };
     const p = programs.find(x => x.id === c.programId);
-    return `<ul class="group info" style="margin-top:14px"><li><span>${t("program")}</span><b>${esc(p ? p[lang] : "")}</b></li>
-        <li><span>${t("status")}</span><b>${t(c.status === "completed" ? "completed" : "active")}</b></li>${c.startDate ? `<li><span>${t("duration")}</span><b>${esc(durationText(c, lang))}</b></li>` : ""}${c.level ? `<li><span>${t("levelLbl")}</span><b>${esc(levelText(c.level, lang))}</b></li>` : ""}</ul>
+    return `${attChart(c, d)}
       <p class="sub">${t("changeTime")}</p>
       <form id="tf" class="group form" novalidate>
         ${sessionFields(sessionsOf(c), DAYS[lang], SLT())}
@@ -249,7 +247,7 @@ const BIND = {
       const ref = await db.collection("exams").add(e); d.exams.push({ ...e, id: ref.id }); render();
     });
   },
-  info(c) {
+  info(c,d) {
     $("#tsave").onclick = guard(async () => {
       const f = $("#tf").elements, sr = readSessions(f, SLT()); if (sr.error) return toast(sr.error);
       if ((f.telegramUrl.value.trim() && !safeUrl(f.telegramUrl.value)) || (f.zoomUrl.value.trim() && !safeUrl(f.zoomUrl.value))) return toast(t("badUrl"));
@@ -265,6 +263,7 @@ const BIND = {
 
 /* ---------- Materials (links to files hosted elsewhere) ---------- */
 BODY.mat = (c, d) => {
+   bindAttChart();
   const list = (d.mats || []).map(m => `<li class="item"><div class="grow"><b>${esc(m.title)}</b><small>${esc(m.url)}</small></div>${linkBtn(m.url, t("openLink"))}<button class="btn small danger" data-delm="${m.id}">${t("del")}</button></li>`).join("") || empty(t("noMat"));
   return `<p class="note" style="margin-top:14px">${t("matHelp")}</p><ul class="group">${list}</ul>
     <form id="mf" class="group form" style="margin-top:14px" novalidate>
@@ -370,4 +369,40 @@ function bindAnnounce() {
     try { await db.collection("announcements").doc(b.dataset.annDel).delete(); ann = ann.filter(a => a.id !== b.dataset.annDel); render(); }
     catch (e) { console.error(e); toast(t("fail")); }
   });
+}
+/* ---------- Attendance chart (Class tab) ---------- */
+const AT = {
+  en: { none: "No attendance recorded yet.", hint: "Tap a student to see each date.", sessions: "sessions" },
+  my: { none: "တက်ရောက်မှု မှတ်တမ်း မရှိသေးပါ။", hint: "ကျောင်းသားကို နှိပ်ပြီး ရက်စွဲအလိုက် ကြည့်ပါ။", sessions: "ကြိမ်" }
+};
+function attChart(c, d) {
+  const L = AT[lang === "my" ? "my" : "en"], K = ["present", "late", "absent", "excused"], LET = { present: "P", late: "L", absent: "A", excused: "E" };
+  const dates = (d.att || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const rows = mem(c).map(m => {
+    const marks = dates.filter(a => a.records && a.records[m.studentId]).map(a => ({ date: a.date, s: a.records[m.studentId] }));
+    return { m, marks, st: attStats(marks.map(x => x.s)) };
+  });
+  if (!rows.length) return `<p class="sub">${t("roster")}</p><ul class="group">${empty(t("noStudents"))}</ul>`;
+  const all = attStats(rows.flatMap(r => r.marks.map(x => x.s)));
+  const bar = st => `<span class="att-bar">${K.map(k => st[k] ? `<span class="att-s-${k}" role="img" aria-label="${esc(t(k))}: ${st[k]}" style="width:${st[k] / st.total * 100}%"></span>` : "").join("")}</span>`;
+  const key = K.map(k => `<span class="att-key"><i class="att-s-${k}" aria-hidden="true">${LET[k]}</i>${esc(t(k))} ${all[k]}</span>`).join("");
+  const items = rows.map(({ m, marks, st }) => `<li class="att-row"><button type="button" class="att-head" aria-expanded="false" data-att="${esc(m.studentId)}">
+      <b>${esc(m.studentName)}</b><span class="att-pct">${st.pct === null ? "—" : st.pct + "%"}</span>${bar(st)}</button>
+    <div class="att-strip" hidden>${marks.map(x => `<button type="button" class="att-dot att-s-${esc(x.s)}" data-d="${esc(x.date)}" data-s="${esc(x.s)}" aria-pressed="false" aria-label="${esc(fmt(x.date))}: ${esc(t(x.s))}">${LET[x.s] || "?"}</button>`).join("") || `<small>${L.none}</small>`}
+      <p class="att-read" role="status" aria-live="polite"></p></div></li>`).join("");
+  return `<p class="sub">${t("att")}</p><div id="att-chart">
+    <div class="group att-sum">${donut(all)}<div><div class="att-keys">${key}</div><small>${dates.length} ${L.sessions}</small></div></div>
+    <p class="note">${L.hint}</p><ul class="group">${items}</ul></div>`;
+}
+function bindAttChart() {
+  const root = $("#att-chart"); if (!root) return;
+  root.onclick = e => {
+    const h = e.target.closest(".att-head"), dot = e.target.closest(".att-dot");
+    if (h) { const open = h.getAttribute("aria-expanded") === "true"; h.setAttribute("aria-expanded", String(!open)); h.nextElementSibling.hidden = open; }
+    if (dot) {
+      const strip = dot.closest(".att-strip");
+      $$(".att-dot", strip).forEach(x => x.setAttribute("aria-pressed", String(x === dot)));
+      $(".att-read", strip).textContent = `${fmt(dot.dataset.d)} · ${t(dot.dataset.s)}`;
+    }
+  };
 }
