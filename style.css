@@ -475,3 +475,51 @@ h3{font-size:20px;text-align:center}
     flex-wrap: wrap;
   }
 }
+/* ---------- Homework: grouped minimal list ---------- */
+.hw-group{margin-top:14px;background:var(--card);border:.5px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.hw-group>summary,.hw-item>summary,.hw-stu>summary{list-style:none;cursor:pointer}
+.hw-group>summary::-webkit-details-marker,.hw-item>summary::-webkit-details-marker,.hw-stu>summary::-webkit-details-marker{display:none}
+.hw-group>summary{display:flex;align-items:center;gap:10px;padding:13px 16px;font-weight:600}
+.hw-group>summary::after{content:"›";color:var(--sub);font-size:22px;transition:transform .3s}
+.hw-group[open]>summary::after{transform:rotate(90deg)}
+.hw-badge{margin-left:auto;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--fill);color:var(--link)}
+.hw-item{border-top:.5px solid var(--line)}
+.hw-item>summary{display:grid;gap:4px;padding:12px 16px}
+.hw-item>summary:hover{background:var(--fill)}
+.hw-title{font-weight:600;overflow-wrap:anywhere}
+.hw-meta{font-size:13px;color:var(--sub)}
+.hw-prog{display:block;height:6px;border-radius:3px;background:var(--fill);overflow:hidden}
+.hw-prog i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold,#C9962B),var(--ok))}
+.hw-body{padding:2px 16px 16px}
+.hw-actions,.hw-chips,.hw-pills{display:flex;flex-wrap:wrap;gap:6px}
+.hw-actions{margin:8px 0}
+.hw-chips{margin:12px 0}
+.hw-chip{border:0;border-radius:999px;min-height:36px;padding:5px 13px;background:var(--fill);color:var(--sub);font-size:13px;font-weight:500;cursor:pointer}
+.hw-chip[aria-pressed=true]{background:var(--accent);color:#fff}
+.hw-students{border:.5px solid var(--line);border-radius:14px;overflow:hidden}
+.hw-stu+.hw-stu{border-top:.5px solid var(--line)}
+.hw-stu>summary,.hw-stu-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 12px}
+.hw-stu-row .btn,.hw-stu>summary .hw-pills{margin-left:auto}
+.hw-stu-body{padding:0 12px 14px}
+.hw-st-submitted{background:rgba(183,121,31,.16);color:var(--warn)}
+.hw-st-needs_revision{background:rgba(181,71,63,.13);color:var(--bad)}
+.hw-st-reviewed{background:rgba(47,143,107,.16);color:var(--ok)}
+.hw-late{background:rgba(181,71,63,.13);color:var(--bad)}
+
+/* ---------- Attendance chart ---------- */
+.att-s-present{background:#34C759}.att-s-late{background:#FF9500}.att-s-absent{background:#FF3B30}.att-s-excused{background:#8E8E93}
+.att-sum{display:flex;align-items:center;gap:16px;padding:14px 16px}
+.att-sum svg{flex:none;color:var(--text)}
+.att-keys{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:4px}
+.att-key{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.att-key i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font:700 11px var(--font);font-style:normal;color:#10203A}
+.att-row{display:block!important;padding:0!important}
+.att-head{display:grid;grid-template-columns:1fr auto;gap:6px 10px;width:100%;padding:12px 16px;border:0;background:none;text-align:left;cursor:pointer}
+.att-head:hover{background:var(--fill)}
+.att-pct{font-weight:600}
+.att-bar{grid-column:1/-1;display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--fill)}
+.att-bar span{display:block;height:100%}
+.att-strip{display:flex;flex-wrap:wrap;gap:6px;padding:4px 16px 14px}
+.att-dot{width:34px;height:34px;border-radius:50%;border:2px solid transparent;font:700 13px var(--font);color:#10203A;cursor:pointer}
+.att-dot[aria-pressed=true]{border-color:var(--text)}
+.att-read{flex-basis:100%;min-height:1.4em;font-size:14px;color:var(--sub)}
