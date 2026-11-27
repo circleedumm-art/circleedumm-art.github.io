@@ -1,7 +1,7 @@
 /* CLC service worker. Keeps the app opening quickly and shows a friendly page when there is no signal.
    It never stores Firebase data or logins. It tries the network first, so website updates appear straight away.
    If you ever need to force everyone to refresh, change the version number below. */
-const VERSION = "clc-v6";
+const VERSION = "clc-v7";
 const SHELL = ["index.html", "offline.html", "student.html", "teacher.html", "admin.html", "student.js", "teacher.js", "admin.js", "certificate.html", "portal-notices.js", "student-apply.js", "student-homework.js", "teacher-homework.js", "style.css", "common.js", "defaults.js", "firebase-config.js", "app.js", "festive.js", "pwa.js", "ripple.js", "sound.js", "manifest.webmanifest", "favicon-48.png", "icon-maskable-512.png", "logo.png", "logo-dark.png",
   "icon-192.png", "icon-512.png"];
 
