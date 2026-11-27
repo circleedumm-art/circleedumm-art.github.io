@@ -9,6 +9,7 @@ const store = { get: k => { try { return localStorage.getItem(k); } catch { retu
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(), db = firebase.firestore();
+const FV = firebase.firestore.FieldValue;
 let enrols = [], users = [], programs = [], classes = [], members = [], reports = [], anns = [], applications = [], started = false;
 
 /* ---------- Theme ---------- */
@@ -377,7 +378,8 @@ function openMembers(c) {
     <button class="btn wide" id="mSave">Save</button>`);
   $("#mSave").onclick = async () => {
     const now = new Set($$('#modal input[type=checkbox]:checked').map(i => i.value)), b = db.batch();
-    now.forEach(uid => { const paidInput = $(`#modal [data-paid="${uid}"]`), paidMMK = Number(paidInput?.value || 0); if (!Number.isInteger(paidMMK) || paidMMK < 0) return mErr("Payment must be a non-negative whole number."); if (!cur.has(uid)) { const u = users.find(x => x.id === uid);
+     for (const uid of now) { const paid = Number($(`#modal [data-paid="${uid}"]`)?.value || 0); if (!Number.isInteger(paid) || paid < 0) return mErr("Payment must be a non-negative whole number."); }
+     now.forEach(uid => { const paidInput = $(`#modal [data-paid="${uid}"]`), paidMMK = Number(paidInput?.value || 0); if (!cur.has(uid)) { 
       b.set(db.collection("memberships").doc(`${c.id}_${uid}`), { classId: c.id, studentId: uid, studentName: u.name, loginId: u.loginId, status: "enrolled", paidMMK, paymentHistory: paidMMK ? [{ amountMMK: paidMMK, recordedAt: new Date().toISOString(), recordedBy: auth.currentUser.uid }] : [], createdAt: firebase.firestore.FieldValue.serverTimestamp() }); } else { const m=members.find(x=>x.classId===c.id&&x.studentId===uid); if(m && paidMMK!==Number(m.paidMMK||0)) b.update(db.collection("memberships").doc(m.id),{paidMMK,paymentHistory:firebase.firestore.FieldValue.arrayUnion({amountMMK:paidMMK,recordedAt:new Date().toISOString(),recordedBy:auth.currentUser.uid})}); } });
     cur.forEach(uid => { if (!now.has(uid)) b.delete(db.collection("memberships").doc(`${c.id}_${uid}`)); });
     try { await b.commit(); closeModal(); toast("Class students updated"); } catch (e) { console.error(e); mErr("Could not save. Try again."); }
@@ -423,8 +425,8 @@ async function openRecords(c) {
 
   root.onclick = async e => {
     const b = e.target.closest("[data-r]"); if (!b) return;
-    const a = b.dataset.r, id = b.dataset.id, FV = firebase.firestore.FieldValue;
-    try {
+    const a = b.dataset.r, id = b.dataset.id;
+     try {
       if (a === "addExam") {
         const f = $("#exForm").elements;
         if (!f.title.value.trim() || !f.date.value) return mErr("Exam needs a title and a date.");
