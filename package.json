@@ -1,0 +1,18 @@
+{
+  "name": "clc-website-dev-tools",
+  "private": true,
+  "description": "Dev-only checks run in CI. The website itself has no build step.",
+  "scripts": {
+    "lint": "node scripts/lint-pages.mjs",
+    "html": "html-validate \"*.html\"",
+    "json": "node -e \"JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8'))\"",
+    "i18n": "node scripts/check-i18n.mjs",
+    "check": "npm run lint && npm run html && npm run json && npm run i18n"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "espree": "^10.0.0",
+    "globals": "^15.0.0",
+    "html-validate": "^9.0.0"
+  }
+}
