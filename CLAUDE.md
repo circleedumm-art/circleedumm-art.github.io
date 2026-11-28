@@ -13,6 +13,7 @@ Static HTML/CSS/vanilla JS + Firebase Auth/Firestore on GitHub Pages. No build s
 
 ## Checks
 `npm install && npm run check` (undefined variables, HTML structure, manifest JSON, EN/MY keys).
+Rules tests (need Java 21 + Node 22): `npm --prefix tests install && npm --prefix tests test`
 
 ## Gotchas
 - Scripts are classic (non-module) and share globals per page. A shared const such as FV must be declared at the top level of each page's own script.
