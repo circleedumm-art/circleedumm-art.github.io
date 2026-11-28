@@ -110,18 +110,18 @@
     <ul class="group" style="margin:16px 0"><li class="item"><div class="grow"><b data-i18n="alumni_h"></b><small data-i18n="alumni_p"></small></div><a class="btn small" href="student.html#classes" data-i18n="alumni_cta"></a></li></ul>
     <form id="enrolForm" class="group form" novalidate>
       <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-      <label><span data-i18n="f_name"></span><input name="name" required autocomplete="name"></label>
-      <label><span data-i18n="f_contact"></span><input name="contact" type="email" inputmode="email" required autocomplete="email"></label>
+      <label><span data-i18n="f_name"></span><input name="name" required maxlength="100" autocomplete="name"></label>
+      <label><span data-i18n="f_contact"></span><input name="contact" type="email" inputmode="email" required maxlength="150" autocomplete="email"></label></label>
       <label><span data-i18n="f_course"></span><select name="course" id="courseSelect"></select></label>
       <label><span data-i18n="f_schol"></span><select name="scholarship" id="scholSel"></select></label>
-      <label class="essay" id="essayLbl" hidden><span data-i18n="f_essay"></span><textarea name="essay" id="essay" rows="8"></textarea></label>
-      <label><span data-i18n="f_note"></span><textarea name="note" rows="3"></textarea></label>
+      <label class="essay" id="essayLbl" hidden><span data-i18n="f_essay"></span><textarea name="essay" id="essay" rows="8" maxlength="3000"></textarea></label>
+      <label><span data-i18n="f_note"></span><textarea name="note" rows="3" maxlength="500"></textarea></label>
     </form>
     <p class="note warn" id="scholNote" hidden data-i18n="schol_warn"></p>
     <p class="note" id="essayCount" hidden></p>
     <p class="note" data-i18n="f_email_note"></p>
     <p class="note" data-i18n="f_privacy"></p>
-    <button class="btn wide" type="submit" form="enrolForm" data-i18n="f_submit"></button>
+    <button class="btn wide" id="enrolBtn" type="submit" form="enrolForm" data-i18n="f_submit"></button>
     <p class="ok" id="enrolOk" hidden data-i18n="f_ok"></p>
   </section>
 
