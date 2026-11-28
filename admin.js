@@ -33,12 +33,12 @@ function start() {
   db.collection("enrolments").orderBy("createdAt", "desc").onSnapshot(s => { enrols = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("users").onSnapshot(s => { users = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("programs").orderBy("order").onSnapshot(s => { programs = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
-  db.collection("classes").onSnapshot(s => { classes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); migrateLegacyCertificates(); }, fail);
+  db.collection("classes").onSnapshot(s => { classes = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("reviews").onSnapshot(s => { reviews = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("siteContent").doc("guides").onSnapshot(d => { guides = d.exists ? d.data() : {}; render(); }, fail);
   db.collection("announcements").onSnapshot(s => { anns = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("reports").onSnapshot(s => { reports = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
-  db.collection("memberships").onSnapshot(s => { members = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); migrateLegacyCertificates(); }, fail);
+  db.collection("memberships").onSnapshot(s => { members = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
   db.collection("classApplications").onSnapshot(s => { applications = s.docs.map(d => ({ id: d.id, ...d.data() })); render(); }, fail);
 }
 
@@ -54,29 +54,40 @@ let siteTab = "programs", guides = {}, reviews = [];
 const view = () => { let v = (location.hash || "#enrolments").slice(1); if (v === "programs") v = "site"; return VIEWS[v] ? v : "enrolments"; };
 const progName = id => (programs.find(p => p.id === id) || {}).en || "Program";
 const initialsOf = name => String(name || "").trim().split(/\s+/).filter(Boolean).map(part => Array.from(part)[0].toLocaleUpperCase()).join(". ") + ".";
-let certMigrationRunning = false;
-async function migrateLegacyCertificates() {
-  if (certMigrationRunning || !classes.length) return;
-  const pending = members.filter(m => m.status === "completed" && !m.certificateId);
-  certMigrationRunning = true;
+const certBackfill = { running: false, text: "" };
+const certBackfillRow = () => `<li class="item"><div class="grow"><b>Certificate backfill</b><small>${esc(certBackfill.text || "Gives completed students who have no certificate a number, and repairs missing lookup records. Safe to run more than once.")}</small></div><button class="btn small" data-act="backfillCerts" ${certBackfill.running ? "disabled" : ""}>${certBackfill.running ? "Working…" : "Run once"}</button></li>`;
+async function backfillCertificates() {
+  if (certBackfill.running) return;
+  const say = text => { certBackfill.text = text; render(); };
+  certBackfill.running = true; say("Starting…");
+  let issued = 0, repaired = 0;
   try {
-    for (const m of pending) {
+    const pending = members.filter(m => m.status === "completed" && !m.certificateId && classes.some(c => c.id === m.classId));
+    for (const [i, m] of pending.entries()) {
+      say(`Issuing certificates… ${i + 1}/${pending.length}`);
       const c = classes.find(x => x.id === m.classId);
-      if (!c) continue;
-      const serial = db.collection("certificateVerifications").doc().id.toUpperCase();
-      const certNo = `CLC-${new Date().getFullYear()}-${serial}`, certRef = db.collection("certificateVerifications").doc(certNo);
-      const issuedAt = firebase.firestore.FieldValue.serverTimestamp(), b = db.batch();
+      const certNo = `CLC-${new Date().getFullYear()}-${db.collection("certificateVerifications").doc().id.toUpperCase()}`, b = db.batch();
       b.update(db.collection("memberships").doc(m.id), { certNo, certificateId: certNo });
-      b.set(certRef, { certificateNo: certNo, classTitle: progName(c.programId), studentInitials: initialsOf(m.studentName), issuedAt, valid: true });
-      
+      b.set(db.collection("certificateVerifications").doc(certNo), { certificateNo: certNo, classTitle: progName(c.programId), studentInitials: initialsOf(m.studentName), issuedAt: FV.serverTimestamp(), valid: true });
       await b.commit();
       Object.assign(m, { certNo, certificateId: certNo });
+      issued++;
     }
-  try {
-    for (const m of members.filter(x=>x.status==="completed" && x.certificateId && x.certNo)) { const ref=db.collection("certificateNumberIndex").doc(String(m.certNo).trim().toUpperCase()), exists=await ref.get(); if(!exists.exists) await ref.set({verificationId:m.certificateId}); const verify=db.collection("certificateVerifications").doc(m.certificateId), record=await verify.get(); if(record.exists && !record.data().studentInitials) await verify.update({studentInitials:initialsOf(m.studentName)}); }
-  } catch (err) { console.error("Certificate lookup index migration failed", err); }
-  } catch (err) { console.error("Certificate migration failed", err); }
-  finally { certMigrationRunning = false; }
+    const done = members.filter(m => m.status === "completed" && m.certificateId && m.certNo);
+    for (let i = 0; i < done.length; i += 10) {
+      say(`Checking lookup records… ${Math.min(i + 10, done.length)}/${done.length}`);
+      const b = db.batch(); let n = 0;
+      await Promise.all(done.slice(i, i + 10).map(async m => {
+        const idx = db.collection("certificateNumberIndex").doc(String(m.certNo).trim().toUpperCase()), ver = db.collection("certificateVerifications").doc(m.certificateId);
+        const [ix, vr] = await Promise.all([idx.get(), ver.get()]);
+        if (!ix.exists) { b.set(idx, { verificationId: m.certificateId }); n++; }
+        if (vr.exists && !vr.data().studentInitials) { b.update(ver, { studentInitials: initialsOf(m.studentName) }); n++; }
+      }));
+      if (n) { await b.commit(); repaired += n; }
+    }
+    say(`Done. ${issued} certificate(s) issued, ${repaired} lookup record(s) repaired.`);
+  } catch (err) { console.error("Certificate backfill failed", err); say("Stopped because of an error. Nothing was lost; you can run it again."); }
+  finally { certBackfill.running = false; render(); }
 }
 
 function render() {
@@ -132,7 +143,7 @@ function render() {
           <small>${n} student${n === 1 ? "" : "s"}${c.public ? " · shown on website" : " · not on website"}</small></div>
           <span class="pill s-${st === "completed" ? "enrolled" : "active"}">${esc(st)}</span>
           <div class="acts">${btn("members", "Students")}${btn("records", "Exams & grades")}${btn("editClass", "Edit")}${btn("delClass", "Delete", "danger")}</div></li>`;
-      }).join("");
+      }).join("") + (classes.length ? certBackfillRow() : "");
   } else if (v === "announcements") {
     empty = "No announcements yet. Tap “Add announcement” to write one.";
     const now = Date.now();
@@ -210,6 +221,7 @@ $("#list").addEventListener("click", async e => {
     if (act === "unpublish") { const b = db.batch(); b.delete(db.collection("testimonials").doc(id)); b.update(db.collection("reviews").doc(id), { status: "pending" }); await b.commit(); toast("Unpublished"); }
     if (act === "delReview" && confirm("Delete this review?")) { const b = db.batch(); b.delete(db.collection("testimonials").doc(id)); b.delete(db.collection("reviews").doc(id)); await b.commit(); }
     if (act === "delClass") await deleteClass(classes.find(x => x.id === id));
+    if (act === "backfillCerts") await backfillCertificates();
   } catch (err) { console.error(err); toast("Something went wrong. Try again."); }
 });
 
@@ -379,7 +391,7 @@ function openMembers(c) {
   $("#mSave").onclick = async () => {
     const now = new Set($$('#modal input[type=checkbox]:checked').map(i => i.value)), b = db.batch();
      for (const uid of now) { const paid = Number($(`#modal [data-paid="${uid}"]`)?.value || 0); if (!Number.isInteger(paid) || paid < 0) return mErr("Payment must be a non-negative whole number."); }
-     now.forEach(uid => { const paidInput = $(`#modal [data-paid="${uid}"]`), paidMMK = Number(paidInput?.value || 0); if (!cur.has(uid)) { 
+     now.forEach(uid => { const paidInput = $(`#modal [data-paid="${uid}"]`), paidMMK = Number(paidInput?.value || 0); if (!cur.has(uid)) { const u = stu.find(x => x.id === uid);
       b.set(db.collection("memberships").doc(`${c.id}_${uid}`), { classId: c.id, studentId: uid, studentName: u.name, loginId: u.loginId, status: "enrolled", paidMMK, paymentHistory: paidMMK ? [{ amountMMK: paidMMK, recordedAt: new Date().toISOString(), recordedBy: auth.currentUser.uid }] : [], createdAt: firebase.firestore.FieldValue.serverTimestamp() }); } else { const m=members.find(x=>x.classId===c.id&&x.studentId===uid); if(m && paidMMK!==Number(m.paidMMK||0)) b.update(db.collection("memberships").doc(m.id),{paidMMK,paymentHistory:firebase.firestore.FieldValue.arrayUnion({amountMMK:paidMMK,recordedAt:new Date().toISOString(),recordedBy:auth.currentUser.uid})}); } });
     cur.forEach(uid => { if (!now.has(uid)) b.delete(db.collection("memberships").doc(`${c.id}_${uid}`)); });
     try { await b.commit(); closeModal(); toast("Class students updated"); } catch (e) { console.error(e); mErr("Could not save. Try again."); }
