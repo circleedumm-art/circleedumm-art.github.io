@@ -49,7 +49,11 @@ const T = {
     r_student:"Student", r_teacher:"Teacher", r_admin:"Admin",
     l_id:"ID", l_pw:"Password", l_signin:"Sign in", l_google:"Continue with Google",
     l_soon:"Your ID and password are given by the CLC admin.", close:"Close", logout:"Log out",
-    l_bad:"Wrong ID or password.", l_notadmin:"This Google account is not the CLC admin.", l_in:"Signed in.", e_fail:"Could not send. Check your internet and try again."
+    l_bad:"Wrong ID or password.", l_notadmin:"This Google account is not the CLC admin.", l_in:"Signed in.", e_fail:"Could not send. Check your internet and try again.",
+    f_sending:"Sending…",
+    f_slow:"This is taking a while. Your form is still being sent, so please do not send it again.",
+    e_offline:"You appear to be offline. Check your internet and try again.",
+    e_denied:"We could not accept this form. Please check your details and try again. If it keeps happening, message us on Facebook."
   },
   my: {
     nav_about:"အကြောင်း", nav_programs:"သင်တန်းများ", nav_schedule:"အချိန်ဇယား", nav_verify:"လက်မှတ်စစ်ဆေးရန်", nav_enrol:"စာရင်းသွင်း", login:"ဝင်ရန်",
@@ -77,7 +81,11 @@ const T = {
     r_student:"ကျောင်းသား", r_teacher:"ဆရာ", r_admin:"အက်ဒမင်",
     l_id:"ID", l_pw:"စကားဝှက်", l_signin:"ဝင်မည်", l_google:"Google ဖြင့် ဆက်လုပ်မည်",
     l_soon:"ID နှင့် စကားဝှက်ကို CLC အက်ဒမင်က ပေးပါမည်။", close:"ပိတ်မည်", logout:"ထွက်မည်",
-    l_bad:"ID သို့မဟုတ် စကားဝှက် မှားနေပါသည်။", l_notadmin:"ဤ Google အကောင့်သည် CLC အက်ဒမင် မဟုတ်ပါ။", l_in:"ဝင်ရောက်ပြီးပါပြီ။", e_fail:"ပို့မရပါ။ အင်တာနက်စစ်ပြီး ပြန်ကြိုးစားပါ။"
+    l_bad:"ID သို့မဟုတ် စကားဝှက် မှားနေပါသည်။", l_notadmin:"ဤ Google အကောင့်သည် CLC အက်ဒမင် မဟုတ်ပါ။", l_in:"ဝင်ရောက်ပြီးပါပြီ။", e_fail:"ပို့မရပါ။ အင်တာနက်စစ်ပြီး ပြန်ကြိုးစားပါ။",
+    f_sending:"ပို့နေပါသည်…",
+    f_slow:"အချိန်ကြာနေပါသည်။ သင့်လျှောက်လွှာကို ပို့နေဆဲဖြစ်သဖြင့် ထပ်မံမပို့ပါနှင့်။",
+    e_offline:"အင်တာနက် မရှိဟု ထင်ရပါသည်။ အင်တာနက်စစ်ပြီး ပြန်ကြိုးစားပါ။",
+    e_denied:"လျှောက်လွှာကို လက်မခံနိုင်ပါ။ အချက်အလက်များကို စစ်ဆေးပြီး ပြန်ကြိုးစားပါ။ ဆက်ဖြစ်နေပါက Facebook တွင် ဆက်သွယ်ပါ။"
   }
 };
 
@@ -160,8 +168,16 @@ $("#programList").addEventListener("click", e => {
 $("#programList").addEventListener("keydown", e => { if (e.key === "Enter") e.target.click(); });
 
 /* ---------- Enrol form ---------- */
+const enrolBtn = $("#enrolBtn");
+function setSending(on) {
+  enrolBtn.disabled = on;
+  enrolBtn.dataset.i18n = on ? "f_sending" : "f_submit";   // keeps the right language if the page re-renders
+  enrolBtn.textContent = T[lang][enrolBtn.dataset.i18n];
+}
+["input", "change"].forEach(ev => $("#enrolForm").addEventListener(ev, () => { $("#enrolOk").hidden = true; }));
 $("#enrolForm").addEventListener("submit", async e => {
   e.preventDefault();
+   if (enrolBtn.disabled) return;   // already sending
   const f = e.target;
   if (f.website && f.website.value) { f.reset(); $("#enrolOk").hidden = false; return; }   // honeypot: bots fill this hidden field
   const okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.contact.value.trim());
@@ -172,11 +188,18 @@ $("#enrolForm").addEventListener("submit", async e => {
   if (schol !== "none" && st.n > st.max) { f.essay.focus(); toast(T[lang].essay_long); return; }
   const entry = { scholarship: schol, essay, name: f.name.value.trim(), email: f.contact.value.trim(),
                   course: DATA.programs[f.course.value].en, note: f.note.value.trim(), status: "pending" };
+  if (navigator.onLine === false) { toast(T[lang].e_offline); return; }
+  $("#enrolOk").hidden = true; setSending(true);
+  const slow = setTimeout(() => toast(T[lang].f_slow), 15000);
   try {
     if (!db) throw new Error("Firebase is not configured");
     await db.collection("enrolments").add({ ...entry, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     f.reset(); updateEssay(); $("#enrolOk").hidden = false;
-  } catch (err) { console.error(err); toast(T[lang].e_fail); }
+  } catch (err) {
+    console.error(err);
+    toast(T[lang][err.code === "permission-denied" ? "e_denied" : err.code === "unavailable" ? "e_offline" : "e_fail"]);
+  } finally { clearTimeout(slow); setSending(false); }
+
 });
 
 /* ---------- Login sheet ---------- */
