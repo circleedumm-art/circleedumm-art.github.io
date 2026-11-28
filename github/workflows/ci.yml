@@ -20,3 +20,6 @@ jobs:
         run: npm run json
       - name: English / Burmese keys match
         run: npm run i18n
+        on:
+  pull_request:
+  workflow_dispatch:
