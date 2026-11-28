@@ -43,11 +43,11 @@ const T = {
 Object.assign(T.en, COMMON_T.en, {
   reviewNeed: "Write a short review of this class to unlock your certificate.", reviewBtn: "Write review", reviewTitle: "Review this class", reviewText: "Your review",
   reviewHint: "What did you learn? What could be better?", allowPublic: "Allow CLC to show my review on the website (first name only)", submitReview: "Submit review",
-  reviewThanks: "Thank you! Your certificate is unlocked.", reviewShort: "Please choose a rating and write at least 10 characters." });
+  reviewThanks: "Thank you! Your certificate is unlocked.", reviewShort: "Please choose a rating and write at least 10 characters.", certHint: "A4 landscape preview. Download the PDF for the full-size certificate.", verifyCert: "Check this certificate online" });
 Object.assign(T.my, COMMON_T.my, {
   reviewNeed: "လက်မှတ်ကို ဖွင့်ရန် ဤအတန်းအကြောင်း အမြင်တိုတို ရေးပေးပါ။", reviewBtn: "အမြင် ရေးမည်", reviewTitle: "ဤအတန်းကို အကဲဖြတ်ပါ", reviewText: "သင့်အမြင်",
   reviewHint: "ဘာတွေ သင်ယူခဲ့ပါသလဲ။ ဘာတွေ ပိုကောင်းနိုင်မလဲ။", allowPublic: "ကျွန်ုပ်၏ အမြင်ကို ဝက်ဘ်ဆိုက်တွင် ပြသရန် ခွင့်ပြုပါသည် (နာမည်ရှေ့ပိုင်းသာ)", submitReview: "အမြင် ပို့မည်",
-  reviewThanks: "ကျေးဇူးတင်ပါသည်။ သင့်လက်မှတ် ဖွင့်ပြီးပါပြီ။", reviewShort: "အဆင့်ရွေးပြီး အက္ခရာ ၁၀ လုံးအနည်းဆုံး ရေးပါ။" });   // strings shared with the teacher page
+  reviewThanks: "ကျေးဇူးတင်ပါသည်။ သင့်လက်မှတ် ဖွင့်ပြီးပါပြီ။", reviewShort: "အဆင့်ရွေးပြီး အက္ခရာ ၁၀ လုံးအနည်းဆုံး ရေးပါ။",  certHint: "A4 အလျားလိုက် နမူနာ ဖြစ်ပါသည်။ အပြည့်အစုံ ကြည့်ရန် PDF ကို သိမ်းပါ။", verifyCert: "အွန်လိုင်းတွင် စစ်ဆေးမည်" });   // strings shared with the teacher page
 const t = k => T[lang][k] ?? k;
 
 /* ---------- Theme & language ---------- */
@@ -193,7 +193,35 @@ function render() {
   if (v === "messages") bindReportBlock(db, me, t, reports, render, toast);
 }
 addEventListener("hashchange", render);
-
+/* ---------- Certificate of Completion (A4 landscape) ---------- */
+const certNoText = no => { const m = /^(CLC-\d{4}-)([A-Z0-9]{20})$/.exec(String(no || "")); return m ? m[1] + m[2].match(/.{5}/g).join(" ") : String(no || "—"); };
+const fmtLong = d => { const x = d && d.toDate ? d.toDate() : new Date(d); return isNaN(x) ? "" : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
+const certVerifyUrl = m => m.certNo ? `${SITE_URL}/certificate.html?code=${encodeURIComponent(m.certNo)}` : `${SITE_URL}/certificate.html?id=${encodeURIComponent(m.certificateId || "")}`;
+function certificateHTML(r) {
+  const c = r.c, p = programs.find(x => x.id === c.programId) || {}, s = statsFor(c.id), gp = gradePct(grades.filter(x => x.classId === c.id));
+  const info = courseInfo(c), lv = levelText(c.level, "en");
+  const facts = [lv && `Level ${lv}`, info && `${info.months} month${info.months === 1 ? "" : "s"} · ${info.total} sessions`, s.pct !== null && `Attendance ${s.pct}%`, gp !== null && `Final grade ${gp}%`].filter(Boolean);
+  return `<div class="certdoc"><div class="cd-border"><div class="cd-in">
+    <div class="cd-head"><img src="logo.png" alt="" onerror="this.remove()"><div><b>CIRCLE LEARNING CENTRE</b><span>Myanmar · Est. 2021</span></div></div>
+    <h1>Certificate of Completion</h1><p class="cd-my">${esc(T.my.cert)}</p>
+    <p class="cd-lead">This is to certify that</p>
+    <h2 class="cd-name${me.name.length > 26 ? " long" : ""}">${esc(me.name)}</h2>
+    <p class="cd-lead">has successfully completed the course</p>
+    <h3 class="cd-course">${esc(p.en || cTitle(c))}</h3>${p.my ? `<p class="cd-my sm">${esc(p.my)}</p>` : ""}${c.label ? `<p class="cd-lead sm">${esc(c.label)}</p>` : ""}
+    ${facts.length ? `<p class="cd-facts">${facts.map(esc).join(" · ")}</p>` : ""}
+    <div class="cd-foot">
+      <div class="cd-meta"><span>Date of issue</span><b>${esc(fmtLong(r.m.completedAt))}</b><span>Certificate No.</span><b class="mono">${esc(certNoText(r.m.certNo || r.m.certificateId))}</b></div>
+      ${signatureBlock("en")}
+      <div class="cd-verify"><div class="cd-qr"></div><small>Scan to verify authenticity</small><small class="mono">${esc(SITE_URL.replace("https://", ""))}/certificate.html</small></div>
+    </div></div></div></div>`;
+}
+function drawCertQr(root, m) {
+  const box = root && root.querySelector(".cd-qr"); if (!box || !window.QRCode || !(m.certNo || m.certificateId)) return;
+  box.innerHTML = "";
+  new QRCode(box, { text: certVerifyUrl(m), width: 132, height: 132, colorDark: "#0F1B2D", colorLight: "#FFFFFF", correctLevel: QRCode.CorrectLevel.M });
+}
+const fitCert = () => { const w = $(".cd-wrap"), s = $(".cd-scale"); if (w && s) { const k = w.clientWidth / 1122; s.style.transform = `scale(${k})`; w.style.height = `${793 * k}px`; } };
+addEventListener("resize", fitCert);
 /* ---------- Clicks: teacher profile, message thread, certificate ---------- */
 $("#view").addEventListener("click", e => {
   const tb = e.target.closest("[data-teacher]"), th = e.target.closest("[data-thread]"), cb = e.target.closest("[data-cert]"), hb = e.target.closest("[data-help]"), rb = e.target.closest("[data-review]");
@@ -217,14 +245,15 @@ $("#view").addEventListener("click", e => {
   if (cb) {
     const r = rows.find(x => x.m.id === cb.dataset.cert); if (!r) return;
     if (!reviews.some(x => x.classId === r.c.id)) return openReview(r.c.id);   // a review unlocks the certificate
-    const s = statsFor(r.c.id), gp = gradePct(grades.filter(x => x.classId === r.c.id));
-    showSheet(`<div class="cert"><img src="logo.png" alt="" height="56" onerror="this.remove()"><h4>${t("cert")}</h4><p>${t("certify")}</p><h3>${esc(me.name)}</h3>
-      <p>${t("done")}</p><h3>${esc(cTitle(r.c))}</h3>
-      <p class="meta">${t("attendance")}: ${s.pct === null ? "—" : s.pct + "%"} · ${t("gradeLbl")}: ${gp === null ? "—" : gp + "%"}</p>
-      <p class="meta">${t("date")}: ${fmt(r.m.completedAt)} · ${t("no")}: ${esc(r.m.certNo || "—")}</p><div id="certQr" data-id="${esc(r.m.certificateId || "")}"></div><a class="btn small" href="certificate.html?id=${encodeURIComponent(r.m.certificateId || "")}">Verify certificate</a>${signatureBlock(lang)}</div>
-      <button class="btn wide" id="prt">${t("print")}</button>`);
-    $("#prt").onclick = () => { const cert = $(".cert"); if (window.html2pdf) html2pdf().set({ margin: 10, filename: (r.m.certNo || "CLC-certificate") + ".pdf", image: { type: "jpeg", quality: .98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } }).from(cert).save(); else print(); };
-    if (r.m.certificateId && window.QRCode) new QRCode($("#certQr"), { text: location.origin + "/certificate.html?id=" + encodeURIComponent(r.m.certificateId), width: 112, height: 112 });
+    showSheet(`<div class="cd-wrap"><div class="cd-scale">${certificateHTML(r)}</div></div><p class="note center">${t("certHint")}</p>
+      <button class="btn wide" id="prt">${t("print")}</button>
+      <a class="btn ghost wide" href="${esc(certVerifyUrl(r.m))}" target="_blank" rel="noopener">${t("verifyCert")}</a>`);
+    modal.firstElementChild.classList.add("wide"); fitCert(); drawCertQr($(".certdoc"), r.m);
+    $("#prt").onclick = () => {
+      if (!window.html2pdf) return print();
+      html2pdf().set({ margin: 0, filename: (r.m.certNo || "CLC-certificate") + ".pdf", image: { type: "jpeg", quality: .98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }, pagebreak: { mode: "avoid-all" } }).from($(".certdoc")).save().then(() => {}, e => { console.error(e); toast(t("fail")); });
+    };
   }
 });
 $("#view").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("go")) e.target.click(); });
