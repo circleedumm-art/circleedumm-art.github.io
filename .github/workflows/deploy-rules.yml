@@ -1,0 +1,24 @@
+name: Deploy Firestore rules
+on:
+  push:
+    branches: [main]
+    paths: ["firestore.rules", "firebase.json"]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm --prefix tests install --no-audit --no-fund
+      - run: npm --prefix tests test
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - run: tests/node_modules/.bin/firebase deploy --only firestore:rules --project clc-website-eebe3 --non-interactive
