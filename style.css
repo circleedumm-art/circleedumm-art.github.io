@@ -523,3 +523,42 @@ h3{font-size:20px;text-align:center}
 .att-dot{width:34px;height:34px;border-radius:50%;border:2px solid transparent;font:700 13px var(--font);color:#10203A;cursor:pointer}
 .att-dot[aria-pressed=true]{border-color:var(--text)}
 .att-read{flex-basis:100%;min-height:1.4em;font-size:14px;color:var(--sub)}
+
+/* ---------- Certificate of Completion: A4 landscape, 1122 x 793 px ---------- */
+.sheet.wide{max-width:min(920px,96vw)}
+.cd-wrap{position:relative;width:100%;overflow:hidden;border-radius:6px;box-shadow:var(--shadow);background:#fff;margin:14px 0 4px}
+.cd-scale{width:1122px;height:793px;transform-origin:0 0}
+.certdoc{width:1122px;height:793px;box-sizing:border-box;padding:26px;background:#fff repeating-linear-gradient(45deg,rgba(30,74,148,.035) 0 1px,transparent 1px 7px);
+  color:#14233B;font-family:Georgia,"Times New Roman","Noto Serif",serif;text-align:center}
+.certdoc .cd-border{height:100%;border:3px solid #16386F;padding:8px;position:relative}
+.certdoc .cd-border::before{content:"";position:absolute;inset:8px;border:1px solid #C9962B;pointer-events:none}
+.certdoc .cd-in{height:100%;border:1px solid rgba(22,56,111,.35);padding:24px 56px 22px;display:flex;flex-direction:column;align-items:center}
+.certdoc .cd-head{display:flex;align-items:center;gap:14px}
+.certdoc .cd-head img{height:60px;width:auto;object-fit:contain}
+.certdoc .cd-head div{text-align:left;font-family:Inter,"Helvetica Neue",Arial,sans-serif}
+.certdoc .cd-head b{display:block;font-size:22px;letter-spacing:.18em;color:#16386F}
+.certdoc .cd-head span{display:block;font-size:12px;letter-spacing:.14em;color:#5A6A82;text-transform:uppercase}
+.certdoc h1{font-size:48px;font-weight:400;letter-spacing:.05em;text-transform:uppercase;color:#16386F;margin:14px 0 0;line-height:1.15;max-width:none}
+.certdoc .cd-my{font-family:"Noto Sans Myanmar",sans-serif;font-size:20px;color:#8A6414;margin:2px 0 0;line-height:1.7}
+.certdoc .cd-my.sm{font-size:16px;color:#5A6A82;margin:0}
+.certdoc .cd-lead{font-size:19px;font-style:italic;color:#41536F;margin:12px 0 0}
+.certdoc .cd-lead.sm{font-size:15px;margin-top:2px}
+.certdoc .cd-name{font-size:48px;font-weight:400;margin:6px 0 2px;color:#0F1B2D;padding:0 40px 4px;border-bottom:1.5px solid #C9962B;display:inline-block;max-width:100%;line-height:1.25;text-align:center}
+.certdoc .cd-name.long{font-size:34px}
+.certdoc .cd-course{font-size:30px;font-weight:700;margin:8px 0 0;color:#16386F;line-height:1.25;text-align:center}
+.certdoc .cd-facts{font:500 15px Inter,Arial,sans-serif;color:#41536F;margin:12px 0 0;letter-spacing:.02em}
+.certdoc .cd-foot{margin-top:auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;gap:20px}
+.certdoc .cd-meta{text-align:left;font-family:Inter,Arial,sans-serif}
+.certdoc .cd-meta span{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5A6A82;margin-top:10px}
+.certdoc .cd-meta b{display:block;font-size:14px;color:#14233B;font-weight:600}
+.certdoc .mono{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.03em}
+.certdoc .sign{margin:0}.certdoc .sign img{height:52px}
+.certdoc .cd-verify{display:flex;flex-direction:column;align-items:flex-end;font-family:Inter,Arial,sans-serif}
+.certdoc .cd-qr{background:#fff;padding:10px;border:1px solid rgba(22,56,111,.3);line-height:0;min-width:152px;min-height:152px}
+.certdoc .cd-verify small{font-size:11px;color:#5A6A82;margin-top:6px}
+@media print{
+  @page{size:A4 landscape;margin:0}
+  .certdoc,.certdoc *{visibility:visible}
+  .cd-wrap,.cd-scale{position:static;width:auto;height:auto;transform:none!important;overflow:visible;box-shadow:none}
+  .certdoc{position:fixed;left:0;top:0}
+}
