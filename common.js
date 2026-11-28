@@ -1,6 +1,7 @@
 /* Shared helpers for the website, student, teacher and admin pages (loaded before each page's own script). */
 
 const _esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const SITE_URL = "https://circleedumm-art.github.io";   // used inside certificate QR codes; change it if you move to your own domain
 
 /* ---------- Course levels (A1–C2 with Burmese names, beginner → proficient) ---------- */
 const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
